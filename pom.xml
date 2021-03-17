@@ -155,7 +155,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib</classpathPrefix>
-                            <mainClass>com.redislabs.rediscdc.gemfire.producer.GemfireProducer</mainClass>
+                            <mainClass>com.redislabs.cdc.integration.test.IntegrationMain</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

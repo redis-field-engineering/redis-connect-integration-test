@@ -15,6 +15,7 @@ import java.sql.PreparedStatement;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -30,8 +31,12 @@ public class CSVLoader {
 
     private static final
     String SQL_INSERT = "INSERT INTO ${table}(${keys}) VALUES(${values})";
+    String SQL_UPDATE = "UPDATE ${table} SET ${key} = ${value} WHERE ${key} = ${value}";
+    String SQL_DELETE = "DELETE FROM ${table} WHERE (${key}) = VALUE(${value})";
     private static final String TABLE_REGEX = "\\$\\{table}";
+    private static final String KEY_REGEX = "\\$\\{key}";
     private static final String KEYS_REGEX = "\\$\\{keys}";
+    private static final String VALUE_REGEX = "\\$\\{value}";
     private static final String VALUES_REGEX = "\\$\\{values}";
 
     private Connection connection;
@@ -51,7 +56,7 @@ public class CSVLoader {
      * Connection details. The connection is closed on success
      * or failure.
      * @param connection <connection>JDBC Connection</connection>
-     * @param separator
+     * @param separator <separator>',' as separator</separator>
      */
     public CSVLoader(Connection connection, char separator) {
         this.connection = connection;
@@ -65,12 +70,12 @@ public class CSVLoader {
      * @param tableName Database table name to import data
      * @param truncateBeforeLoad Truncate the table before inserting
      * 			new records.
-     * @throws Exception
+     * @throws Exception Throws exception
      */
     public void loadCSVToTable(String csvFile, String tableName,
                                boolean truncateBeforeLoad) throws Exception {
 
-        CSVReader csvReader = null;
+        CSVReader csvReader;
         if(null == this.connection) {
             throw new Exception("Not a valid connection.");
         }
@@ -96,20 +101,27 @@ public class CSVLoader {
         questionmarks = (String) questionmarks.subSequence(0, questionmarks
                 .length() - 1);
 
-        String query = SQL_INSERT.replaceFirst(TABLE_REGEX, tableName);
-        query = query
+        String insert_query = SQL_INSERT.replaceFirst(TABLE_REGEX, tableName);
+        insert_query = insert_query
                 .replaceFirst(KEYS_REGEX, StringUtils.join(headerRow, separator));
-        query = query.replaceFirst(VALUES_REGEX, questionmarks);
+        insert_query = insert_query.replaceFirst(VALUES_REGEX, questionmarks);
 
-        log.info("Query: {}", query);
+        log.info("Insert Query: {}", insert_query);
+
+        String update_query = SQL_UPDATE.replaceFirst(TABLE_REGEX, tableName);
+        update_query = update_query
+                .replaceFirst(KEY_REGEX.substring(0,6), StringUtils.join(Collections.singleton(headerRow[6]), separator));
+        update_query = update_query.replaceFirst(VALUE_REGEX.substring(0,6), questionmarks);
+
+        log.info("Update Query: {}", update_query);
 
         String[] rowData;
         Connection con = null;
-        PreparedStatement ps = null;
+        PreparedStatement ps;
         try {
             con = this.connection;
             con.setAutoCommit(false);
-            ps = con.prepareStatement(query);
+            ps = con.prepareStatement(insert_query);
 
             if(truncateBeforeLoad) {
                 //delete data from table before loading csv
@@ -154,8 +166,8 @@ public class CSVLoader {
                 //
             }
             ps.executeBatch(); // insert remaining
-            for(int i=0; i < rowDataList.size(); i++){
-                log.info("Source record {}", rowDataList.get(i));
+            for (Object o : rowDataList) {
+                log.info("Source record {}", o);
             }
             // can create a file with loaded record
             //IntegrationUtil.writeToFileAsJson(sourceJsonFile,rowDataList);

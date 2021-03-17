@@ -1,0 +1,24 @@
+<assembly>
+    <id>tar</id>
+    <includeBaseDirectory>false</includeBaseDirectory>
+
+    <formats>
+        <format>tar.gz</format>
+    </formats>
+    <fileSets>
+        <fileSet>
+            <directory>target</directory>
+            <outputDirectory>redis-cdc-integration-test</outputDirectory>
+            <includes>
+                <include>redis-cdc-integration-test-*.jar</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>target/lib</directory>
+            <outputDirectory>redis-cdc-integration-test/lib</outputDirectory>
+            <includes>
+                <include>*.jar</include>
+            </includes>
+        </fileSet>
+    </fileSets>
+</assembly>

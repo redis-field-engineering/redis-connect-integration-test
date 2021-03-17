@@ -1,0 +1,25 @@
+connections:
+  source:
+    name: RedisLabsCDC #database name
+    db: RedisLabsCDC #database
+    hostname: 35.185.69.89
+    port: 1433
+    username: sa
+    password: Redis@123
+    type: mssqlserver #this value can not be changed for mssqlserver
+    jdbcUrl: "jdbc:sqlserver://35.185.69.89:1433;database=RedisLabsCDC"
+    maximumPoolSize: 10
+    minimumIdle: 2
+    tableName: dbo.emp
+    pkey: empno
+    batchSize: 500
+    sourceQueryFile: /Users/viragtripathi/idea_workspace/redis-cdc-integration-test/src/main/resources/select.sql
+    loadQueryFile: /Users/viragtripathi/idea_workspace/redis-cdc-integration-test/src/main/resources/insert.sql
+    csvFile: /Users/viragtripathi/idea_workspace/redis-cdc-integration-test/src/main/resources/emp.csv
+    #loadQueryFile: /Users/viragtripathi/idea_workspace/redis-cdc-integration-test/src/main/resources/update.sql
+    #loadQueryFile: /Users/viragtripathi/idea_workspace/redis-cdc-integration-test/src/main/resources/delete.sql
+    sourceJsonFile: /Users/viragtripathi/idea_workspace/redis-cdc-integration-test/src/main/resources/emp-source.json
+    #sourceSqlString: "select * from dbo.emp"
+  target:
+    redisUrl: redis://35.185.69.89:14000
+    keys: /Users/viragtripathi/idea_workspace/redis-cdc-integration-test/src/main/resources/redis.keys

@@ -1,28 +1,20 @@
 package com.redislabs.cdc.integration.test.target.redis;
 
-import brave.Tracing;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.redislabs.cdc.integration.test.config.IntegrationConfig;
 import com.redislabs.cdc.integration.test.connections.JDBCConnectionProvider;
-import com.redislabs.cdc.integration.test.core.CSVLoader;
 import com.redislabs.cdc.integration.test.core.CoreConfig;
 import com.redislabs.cdc.integration.test.core.IntegrationUtil;
 import com.redislabs.cdc.integration.test.core.ReadFile;
-import io.lettuce.core.RedisClient;
-import io.lettuce.core.api.StatefulRedisConnection;
-import io.lettuce.core.api.sync.RedisCommands;
-import io.lettuce.core.resource.DefaultClientResources;
-import io.lettuce.core.tracing.BraveTracing;
+import com.redislabs.cdc.integration.test.source.rdb.LoadRDB;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
+import picocli.CommandLine;
 
 import java.sql.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  *
@@ -31,16 +23,15 @@ import java.util.Map;
  */
 
 @Slf4j
+@CommandLine.Command(name = "loadsqlandcompare",
+        description = "Load source table with sql inserts and compare them with target JSON objects.")
 public class QueryAndCompare implements Runnable {
     private static final ReadFile readFile = new ReadFile();
     private static final JDBCConnectionProvider JDBC_CONNECTION_PROVIDER = new JDBCConnectionProvider();
     private static final Map<String, Object> sourceConfig = IntegrationConfig.INSTANCE.getEnvConfig().getConnection("source");
     private static final String sourceJsonFile = (String) sourceConfig.get("sourceJsonFile");
-    private static final String sourceQueryFile = (String) sourceConfig.get("sourceQueryFile");
+    private static final String select = (String) sourceConfig.get("select");
     private static final String sourceSqlString = (String) sourceConfig.get("sourceSqlString");
-    private static final String csvFile = (String) sourceConfig.get("csvFile");
-    private static final String tableName = (String) sourceConfig.get("tableName");
-    private static final String primaryKey = (String) sourceConfig.get("pkey");
     private static final int batchSize = (int) sourceConfig.get("batchSize");
     private static String query = null;
 
@@ -63,16 +54,19 @@ public class QueryAndCompare implements Runnable {
      */
     @Override
     public void run() {
-        loadCSV();
         compareSourceAndTargetJson();
     }
 
     private void compareSourceAndTargetJson() {
         try {
+            LoadRDB loadRDB = new LoadRDB();
+            loadRDB.run();
             Thread.sleep(10000L);
             String keysFromFile = readFile.readFileAsString(keysInFile);
-            // read redis.keys and store all of the keys
+            // populate the keysInFile instead of user
+            //String query_pkeys = "SELECT " + pKeys + " FROM " + tableName + " ORDER BY " + pKeys + ";";
             String[] keys = keysFromFile.split(";");
+
             log.info("Got {} Redis keys to process from {}.", keys.length, keysInFile);
 
             /*
@@ -83,11 +77,12 @@ public class QueryAndCompare implements Runnable {
             // read the source json output as JSONArray
             JSONArray sourceList = readFile.readFileAsJson(sourceJsonFile);
             // parse JSONArray as JSONString
-            JsonElement sourceJson= JsonParser.parseString(sourceList.toJSONString());
+            JsonElement sourceJson = JsonParser.parseString(sourceList.toJSONString());
 
 
             // Prepare target JSON object
-            JsonElement targetJson = JsonParser.parseString(hgetAll(keys).toJSONString());
+            //IntegrationUtil.execRedis(redisURI).flushdbAsync();
+            JsonElement targetJson = JsonParser.parseString(IntegrationUtil.hgetAllAsJsonArray(redisURI, keys).toJSONString());
 
             if(log.isDebugEnabled()) {
                 log.debug("Source:\n {}", sourceJson);
@@ -116,41 +111,11 @@ public class QueryAndCompare implements Runnable {
 
     }
 
-    /**
-     * @param keys <keys>List of Redis keys.</keys>
-     * @return output as org.json.simple.JSONArray
-     */
-    private JSONArray hgetAll(String[] keys) {
-        //RedisClient redisClient = RedisClient.create(redisURI);
-        //StatefulRedisConnection<String, String> redisConnection = redisClient.connect();
-        //log.info("Connected to target Redis at {}", redisURI);
-        //RedisCommands<String, String> syncCommands = redisConnection.sync();
-        RedisClient redisClient =
-                RedisClient.create(
-                        DefaultClientResources.builder()
-                                .tracing(BraveTracing.create(Tracing.newBuilder().build()))
-                                .build(),
-                        redisURI);
-
-        StatefulRedisConnection<String, String> redisConnection = redisClient.connect();
-        log.info("Connected to target Redis at {}", redisURI);
-        RedisCommands<String, String> syncCommands = redisConnection.sync();
-
-        JSONArray value = new JSONArray();
-        for (String key : keys) {
-            value.add(syncCommands.hgetall(key));
-        }
-
-        redisClient.shutdown();
-
-        return value;
-    }
-
     private void createSourceJson() {
         try {
             // Prepare Source data
             if(sourceSqlString == null) {
-                query = readFile.readFileAsString(sourceQueryFile);
+                query = readFile.readFileAsString(select);
             }
             ResultSet rs = getSqlData(query);
             ResultSetMetaData rsmd = rs.getMetaData();
@@ -165,9 +130,10 @@ public class QueryAndCompare implements Runnable {
                 for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
                     String columnTypeName = rsmd.getColumnTypeName(columnIndex);
                     //log.info(columnTypeName);
-                    if (columnTypeName == "money") {
-                        sourceMap.put(rsmd.getColumnName(columnIndex), IntegrationUtil.removeTrailingZeroes(rs.getString(columnIndex)));
-                    } else if (columnTypeName == "datetime") {
+                    if (Objects.equals(columnTypeName, "money")) {
+                        sourceMap.put(rsmd.getColumnName(columnIndex), IntegrationUtil.fmtDouble(rs.getDouble(columnIndex)));
+                        //sourceMap.put(rsmd.getColumnName(columnIndex), rs.getString(columnIndex));
+                    } else if (Objects.equals(columnTypeName, "datetime")) {
                         String input = rs.getString(columnIndex).replace( " " , "T" );
                         LocalDateTime ldt = LocalDateTime.parse(input);
                         sourceMap.put(rsmd.getColumnName(columnIndex), ldt.toString());
@@ -202,17 +168,6 @@ public class QueryAndCompare implements Runnable {
         }
 
         return resultSet;
-    }
-
-    private void loadCSV() {
-        Connection sqlConnection = JDBC_CONNECTION_PROVIDER.getConnection(coreConfig.getConnectionId());
-        log.info("Connected to Provider at {}", sqlConnection.toString());
-        CSVLoader csvLoader = new CSVLoader(sqlConnection, ',');
-        try {
-            csvLoader.loadCSVToTable(csvFile, tableName, true);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
 }

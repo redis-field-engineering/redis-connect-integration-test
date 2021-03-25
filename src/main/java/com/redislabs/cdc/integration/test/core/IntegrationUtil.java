@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.redislabs.cdc.integration.test.config.IntegrationConfig;
+import com.redislabs.cdc.integration.test.connections.JDBCConnectionProvider;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
@@ -13,6 +15,7 @@ import io.lettuce.core.tracing.BraveTracing;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.json.simple.JSONArray;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -20,13 +23,13 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 /**
  *
@@ -38,33 +41,19 @@ import java.util.List;
 @Setter
 @Slf4j
 public class IntegrationUtil {
-    // List of all date formats that we want to parse.
-    // Add your own format here.
-    public static List<SimpleDateFormat>
-            dateFormats = new ArrayList<SimpleDateFormat>() {
-        private static final long serialVersionUID = 1L;
-        {
-            add(new SimpleDateFormat("yyyy-MM-dd hh:mm:ss"));
-            add(new SimpleDateFormat("M/dd/yyyy"));
-            add(new SimpleDateFormat("dd.M.yyyy"));
-            add(new SimpleDateFormat("M/dd/yyyy hh:mm:ss a"));
-            add(new SimpleDateFormat("dd.M.yyyy hh:mm:ss a"));
-            add(new SimpleDateFormat("dd.MMM.yyyy"));
-            add(new SimpleDateFormat("dd-MMM-yyyy"));
-        }
-    };
+    private static final JDBCConnectionProvider JDBC_CONNECTION_PROVIDER = new JDBCConnectionProvider();
+    private static final CoreConfig coreConfig = new CoreConfig();
 
-    public static String removeLeadingZeroes(String s) {
-        StringBuilder sb = new StringBuilder(s);
-        while (sb.length() > 0 && sb.charAt(0) == '0') {
-            sb.deleteCharAt(0);
-        }
-        return sb.toString();
-    }
+    private static final Map<String, Object> targetConfig = IntegrationConfig.INSTANCE.getEnvConfig().getConnection("target");
+    private static final String redisURI = (String) targetConfig.get("redisUrl");
 
-    public static String removeTrailingZeroes(String s) {
+    public static String removeTrailingZeroes(String  s) {
         //return s.indexOf(".") < 0 ? s : s.replaceAll("0*$", "").replaceAll("\\.$", "");
         return s.replaceAll("(?!^)0+$", "");
+    }
+
+    public static String fmtDouble(double d) {
+        return String.format("%s", d);
     }
 
     public static void writeToFile(String file, String content) throws IOException {
@@ -72,8 +61,7 @@ public class IntegrationUtil {
         // clear the contents before writing new contents
         FileChannel.open(Paths.get(file), StandardOpenOption.WRITE).truncate(0).close();
         FileChannel channel = stream.getChannel();
-        String value = content;
-        byte[] strBytes = value.getBytes();
+        byte[] strBytes = content.getBytes();
         ByteBuffer buffer = ByteBuffer.allocate(strBytes.length);
         buffer.put(strBytes);
         buffer.flip();
@@ -157,34 +145,6 @@ public class IntegrationUtil {
         return isEqual;
     }
 
-    /**
-     * Convert String with various formats into java.util.Date
-     *
-     * @param input
-     *            Date as a string
-     * @return java.util.Date object if input string is parsed
-     *          successfully else returns null
-     */
-    public static Date convertToDate(String input) {
-        Date date = null;
-        if(null == input) {
-            return null;
-        }
-        for (SimpleDateFormat format : dateFormats) {
-            try {
-                format.setLenient(false);
-                date = format.parse(input);
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-            if (date != null) {
-                break;
-            }
-        }
-
-        return date;
-    }
-
     public static RedisCommands<String, String> traceRedis(String redisUri) {
         RedisClient redisClient =
                 RedisClient.create(
@@ -198,4 +158,75 @@ public class IntegrationUtil {
 
         return redisConnection.sync();
     }
+
+    public static RedisCommands<String, String> execRedis(String redisUri) {
+        RedisClient redisClient = RedisClient.create(redisUri);
+
+        StatefulRedisConnection<String, String> redisConnection = redisClient.connect();
+        if(log.isDebugEnabled())
+        log.debug("Connected to target Redis at {}", redisUri);
+
+        return redisConnection.sync();
+    }
+
+    /**
+     * @param keys <keys>List of Redis keys.</keys>
+     * @return output as org.json.simple.JSONArray
+     */
+    public static JSONArray traceHgetAllAsJsonArray(String redisUri, String[] keys) {
+        RedisClient redisClient =
+                RedisClient.create(
+                        DefaultClientResources.builder()
+                                .tracing(BraveTracing.create(Tracing.newBuilder().build()))
+                                .build(),
+                        redisURI);
+
+        StatefulRedisConnection<String, String> redisConnection = redisClient.connect();
+        log.info("Connected to target Redis at {}", redisURI);
+        RedisCommands<String, String> syncCommands = redisConnection.sync();
+
+        JSONArray value = new JSONArray();
+        for (String key : keys) {
+            value.add(syncCommands.hgetall(key));
+        }
+
+        redisClient.shutdown();
+
+        return value;
+    }
+
+    /**
+     * @param keys <keys>List of Redis keys.</keys>
+     * @return output as org.json.simple.JSONArray
+     */
+    public static JSONArray hgetAllAsJsonArray(String redisUri, String[] keys) {
+        RedisClient redisClient = RedisClient.create(redisUri);
+        StatefulRedisConnection<String, String> redisConnection = redisClient.connect();
+        log.info("Connected to target Redis at {}", redisURI);
+        RedisCommands<String, String> syncCommands = redisConnection.sync();
+
+        JSONArray value = new JSONArray();
+        for (String key : keys) {
+            value.add(syncCommands.hgetall(key));
+        }
+
+        return value;
+    }
+
+    public static ArrayList<String> pkToProcess(String tableName) throws SQLException {
+        Connection sqlConnection = JDBC_CONNECTION_PROVIDER.getConnection(coreConfig.getConnectionId());
+        log.info("Connected to Provider at {}", sqlConnection.toString());
+
+        String[] schemaAndTable = tableName.split("\\.");
+        DatabaseMetaData databaseMetaData = sqlConnection.getMetaData();
+        ResultSet resultSet = databaseMetaData.getPrimaryKeys(null,schemaAndTable.length == 2 ? schemaAndTable[0] : null,schemaAndTable.length == 2 ? schemaAndTable[1] : schemaAndTable[0]);
+        ArrayList<String> primaryKeys = new ArrayList<>();
+        while (resultSet.next()) {
+            primaryKeys.add(resultSet.getString("COLUMN_NAME").toLowerCase());
+        }
+        resultSet.close();
+
+        return primaryKeys;
+    }
+
 }

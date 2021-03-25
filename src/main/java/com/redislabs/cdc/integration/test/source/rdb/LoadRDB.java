@@ -7,6 +7,7 @@ import com.redislabs.cdc.integration.test.core.ReadFile;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import picocli.CommandLine;
 
 import java.io.File;
 import java.sql.Connection;
@@ -23,10 +24,12 @@ import java.util.Map;
 @Getter
 @Setter
 @Slf4j
+@CommandLine.Command(name = "loadsqldata",
+        description = "Load data into source table using sql insert statements.")
 public class LoadRDB implements Runnable {
     private static final JDBCConnectionProvider JDBC_CONNECTION_PROVIDER = new JDBCConnectionProvider();
     private static final Map<String, Object> sourceConfig = IntegrationConfig.INSTANCE.getEnvConfig().getConnection("source");
-    private static final ReadFile readFile = new ReadFile();
+    private static final String tableName = (String) sourceConfig.get("tableName");
     private CoreConfig coreConfig = new CoreConfig();
     private static final Map<String, Object> targetConfig = IntegrationConfig.INSTANCE.getEnvConfig().getConnection("target");
 
@@ -36,6 +39,8 @@ public class LoadRDB implements Runnable {
     private String query;
     private File sqlFileName;
     private StringBuffer sb;
+    @CommandLine.Option(names = "--truncateBeforeLoad", description = "Truncate the source table before load", paramLabel = "<boolean>")
+    private boolean truncateBeforeLoad = true;
 
     @Override
     public void run() {
@@ -43,6 +48,10 @@ public class LoadRDB implements Runnable {
             batchSize = (int) sourceConfig.get("batchSize");
             connection = JDBC_CONNECTION_PROVIDER.getConnection(coreConfig.getConnectionId());
             //log.info(connection.getCatalog());
+            if(truncateBeforeLoad) {
+                //delete data from table before loading csv
+                connection.createStatement().execute("DELETE FROM " + tableName);
+            }
             load();
 
             //connection.close();
@@ -55,6 +64,7 @@ public class LoadRDB implements Runnable {
 
     private void load() {
         try {
+            ReadFile readFile = new ReadFile();
             Statement loadStatement = connection.createStatement();
             loadStatement.setFetchSize(batchSize);
 
@@ -65,7 +75,6 @@ public class LoadRDB implements Runnable {
                 query = readFile.readFileAsString(fileName);
             }
             loadStatement.executeUpdate(query);
-            //log.info(query);
 
             loadStatement.close();
             connection.close();

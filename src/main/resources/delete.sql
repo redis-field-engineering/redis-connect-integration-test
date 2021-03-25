@@ -1,1 +1,1 @@
-delete from dbo.emp
+DELETE FROM emp WHERE sal > 102000;

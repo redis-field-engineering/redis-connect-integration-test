@@ -37,9 +37,11 @@ public class ReadFile {
             // here is our splitter ! We use “;” as a delimiter for each request
             // then we are sure to have well formed statements
             numLines = sb.toString().split(";");
-        /*if (numLines.length > 0) {
-            log.info("{} row(s) affected!", numLines.length);
-        }*/
+            /*
+            if (numLines.length > 0) {
+                log.info("{} row(s) affected!", numLines.length);
+            }
+            */
         return sb.toString();
     }
 

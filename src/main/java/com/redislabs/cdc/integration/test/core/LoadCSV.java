@@ -29,8 +29,6 @@ import java.util.*;
 public class LoadCSV implements Runnable {
 
     private String SQL_INSERT = "INSERT INTO ${table}(${keys}) VALUES(${values})";
-    private String SQL_UPDATE = "UPDATE ${table} SET ?=? WHERE ?=?";
-    private String SQL_DELETE = "DELETE FROM ${table} WHERE ?=?";
     private static final String TABLE_REGEX = "\\$\\{table}";
     private static final String KEYS_REGEX = "\\$\\{keys}";
     private static final String VALUES_REGEX = "\\$\\{values}";
@@ -46,8 +44,6 @@ public class LoadCSV implements Runnable {
     private static final String type = (String) sourceConfig.get("type");
 
     private static final Map<String, Object> targetConfig = IntegrationConfig.INSTANCE.getEnvConfig().getConnection("target");
-    private static final String redisURI = (String) targetConfig.get("redisUrl");
-    private Random randomGenerator = new Random();
     @CommandLine.Option(names = {"-s", "--separator"}, description = "CSV records separator", paramLabel = "<char>", defaultValue = ",", showDefaultValue = CommandLine.Help.Visibility.ALWAYS)
     private char separator = ',';
     @CommandLine.Option(names = {"-t", "--truncateBeforeLoad"}, description = "Truncate the source table before load", paramLabel = "<boolean>", defaultValue = "true", showDefaultValue = CommandLine.Help.Visibility.ALWAYS)

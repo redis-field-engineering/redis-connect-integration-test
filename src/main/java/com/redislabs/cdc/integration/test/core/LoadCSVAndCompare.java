@@ -3,6 +3,7 @@ package com.redislabs.cdc.integration.test.core;
 import com.opencsv.CSVReader;
 import com.redislabs.cdc.integration.test.config.IntegrationConfig;
 import com.redislabs.cdc.integration.test.connections.JDBCConnectionProvider;
+import io.lettuce.core.RedisClient;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -50,6 +51,7 @@ public class LoadCSVAndCompare implements Runnable {
 
     private static final Map<String, Object> targetConfig = IntegrationConfig.INSTANCE.getEnvConfig().getConnection("target");
     private static final String redisURI = (String) targetConfig.get("redisUrl");
+    private RedisClient redisClient = null;
     @CommandLine.Option(names = {"-s", "--separator"}, description = "CSV records separator", paramLabel = "<char>", defaultValue = ",", showDefaultValue = CommandLine.Help.Visibility.ALWAYS)
     private char separator = ',';
     @CommandLine.Option(names = {"-t", "--truncateBeforeLoad"}, description = "Truncate the source table before load", paramLabel = "<boolean>")
@@ -95,8 +97,10 @@ public class LoadCSVAndCompare implements Runnable {
 
         String[] rowData;
         PreparedStatement ps;
+        IntegrationUtil integrationUtil = new IntegrationUtil();
 
         try {
+            redisClient = RedisClient.create(redisURI);
             connection.setAutoCommit(false);
 
             ps = connection.prepareStatement(insert_query);
@@ -132,12 +136,11 @@ public class LoadCSVAndCompare implements Runnable {
             }
             ps.executeBatch(); // insert remaining
 
-
             for (String[] rows : rowDataList) {
                 log.info("##### Start Record {} #####", rows[0]);
                 log.info("{} record for primary key {}-> {}", type, rows[0], rows);
                 log.info("Redis record for key {}->", table[1] + ":" + rows[0]);
-                log.info(String.valueOf(IntegrationUtil.execRedis(redisURI).hgetall(table[1] + ":" + rows[0])));
+                log.info(String.valueOf(integrationUtil.execRedis(redisClient).hgetall(table[1] + ":" + rows[0])));
                 log.info("##### End Record {} #####", rows[0]);
             }
 
@@ -153,17 +156,11 @@ public class LoadCSVAndCompare implements Runnable {
             }
              */
 
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                log.error("InterruptedException..", e);
-            }
-            // DELETE and Compare
-
             // commit and close connection
             connection.commit();
             ps.close();
             csvReader.close();
+            redisClient.shutdown();
         } catch (Exception e) {
             connection.rollback();
             e.printStackTrace();
@@ -177,10 +174,11 @@ public class LoadCSVAndCompare implements Runnable {
         int select_count = 0;
         try {
             Statement stmt = connection.createStatement();
-            String select_count_query = "SELECT COUNT(*) FROM " + LoadCSVAndCompare.tableName;
+            String select_count_query = "SELECT COUNT(*) FROM " + tableName;
             ResultSet rs = stmt.executeQuery(select_count_query);
             rs.next();
             select_count = rs.getInt(1);
+            log.info("Total records in {}={}.", tableName, select_count);
         } catch(Exception e) {
             e.printStackTrace();
             log.error(e.getMessage());
@@ -280,6 +278,7 @@ public class LoadCSVAndCompare implements Runnable {
                 doDelete();  doSelect();
             }
             connection.close();
+            redisClient.shutdown();
         } catch (Exception e) {
             log.error(e.getMessage());
         }

@@ -46,6 +46,8 @@ public class IntegrationUtil {
 
     private static final Map<String, Object> targetConfig = IntegrationConfig.INSTANCE.getEnvConfig().getConnection("target");
     private static final String redisURI = (String) targetConfig.get("redisUrl");
+    private RedisClient redisClient = null;
+    private String redisUri;
 
     public static String removeTrailingZeroes(String  s) {
         //return s.indexOf(".") < 0 ? s : s.replaceAll("0*$", "").replaceAll("\\.$", "");
@@ -56,7 +58,7 @@ public class IntegrationUtil {
         return String.format("%s", d);
     }
 
-    public static void writeToFile(String file, String content) throws IOException {
+    public void writeToFile(String file, String content) throws IOException {
         RandomAccessFile stream = new RandomAccessFile(file, "rw");
         // clear the contents before writing new contents
         FileChannel.open(Paths.get(file), StandardOpenOption.WRITE).truncate(0).close();
@@ -70,7 +72,7 @@ public class IntegrationUtil {
         channel.close();
     }
 
-    public static void writeToFileAsJson(String file, Object content) throws IOException {
+    public void writeToFileAsJson(String file, Object content) throws IOException {
         RandomAccessFile stream = new RandomAccessFile(file, "rw");
         // clear the contents before writing new contents
         FileChannel.open(Paths.get(file), StandardOpenOption.WRITE).truncate(0).close();
@@ -86,7 +88,7 @@ public class IntegrationUtil {
         channel.close();
     }
 
-    public static boolean compareJson(JsonElement json1, JsonElement json2) {
+    public boolean compareJson(JsonElement json1, JsonElement json2) {
         boolean isEqual = true;
         // Check whether both jsonElement are not null
         if(json1 !=null && json2 !=null) {
@@ -145,27 +147,36 @@ public class IntegrationUtil {
         return isEqual;
     }
 
-    public static RedisCommands<String, String> traceRedis(String redisUri) {
-        RedisClient redisClient =
-                RedisClient.create(
-                        DefaultClientResources.builder()
-                                .tracing(BraveTracing.create(Tracing.newBuilder().build()))
-                                .build(),
-                        redisUri);
+    public RedisCommands<String, String> traceRedis(RedisClient client) {
+        redisClient = client;
+        StatefulRedisConnection<String, String> redisConnection = null;
 
-        StatefulRedisConnection<String, String> redisConnection = redisClient.connect();
-        log.info("Connected to target Redis at {}", redisUri);
+        if (client != null) {
+            client =
+                    RedisClient.create(
+                            DefaultClientResources.builder()
+                                    .tracing(BraveTracing.create(Tracing.newBuilder().build()))
+                                    .build(),
+                            redisUri);
+
+            redisConnection = client.connect();
+            log.info("Connected to target Redis at {}", redisUri);
+        }
 
         return redisConnection.sync();
     }
 
-    public static RedisCommands<String, String> execRedis(String redisUri) {
-        RedisClient redisClient = RedisClient.create(redisUri);
+    public RedisCommands<String, String> execRedis(RedisClient client) {
+        redisClient = client;
+        StatefulRedisConnection<String, String> redisConnection = null;
 
-        StatefulRedisConnection<String, String> redisConnection = redisClient.connect();
-        if(log.isDebugEnabled())
-        log.debug("Connected to target Redis at {}", redisUri);
+        if (client != null) {
+            redisConnection = client.connect();
+            if(log.isDebugEnabled())
+                log.debug("Connected to target Redis at {}", redisUri);
+        }
 
+        assert redisConnection != null;
         return redisConnection.sync();
     }
 
@@ -173,15 +184,16 @@ public class IntegrationUtil {
      * @param keys <keys>List of Redis keys.</keys>
      * @return output as org.json.simple.JSONArray
      */
-    public static JSONArray traceHgetAllAsJsonArray(String redisUri, String[] keys) {
-        RedisClient redisClient =
+    public JSONArray traceHgetAllAsJsonArray(RedisClient client, String[] keys) {
+        redisClient = client;
+        client =
                 RedisClient.create(
                         DefaultClientResources.builder()
                                 .tracing(BraveTracing.create(Tracing.newBuilder().build()))
                                 .build(),
                         redisURI);
 
-        StatefulRedisConnection<String, String> redisConnection = redisClient.connect();
+        StatefulRedisConnection<String, String> redisConnection = client.connect();
         log.info("Connected to target Redis at {}", redisURI);
         RedisCommands<String, String> syncCommands = redisConnection.sync();
 
@@ -189,8 +201,6 @@ public class IntegrationUtil {
         for (String key : keys) {
             value.add(syncCommands.hgetall(key));
         }
-
-        redisClient.shutdown();
 
         return value;
     }
@@ -199,21 +209,23 @@ public class IntegrationUtil {
      * @param keys <keys>List of Redis keys.</keys>
      * @return output as org.json.simple.JSONArray
      */
-    public static JSONArray hgetAllAsJsonArray(String redisUri, String[] keys) {
-        RedisClient redisClient = RedisClient.create(redisUri);
-        StatefulRedisConnection<String, String> redisConnection = redisClient.connect();
-        log.info("Connected to target Redis at {}", redisURI);
-        RedisCommands<String, String> syncCommands = redisConnection.sync();
-
+    public JSONArray hgetAllAsJsonArray(RedisClient client, String[] keys) {
         JSONArray value = new JSONArray();
-        for (String key : keys) {
-            value.add(syncCommands.hgetall(key));
+        if (client != null && keys.length != 0) {
+            redisClient = client;
+            StatefulRedisConnection<String, String> redisConnection = client.connect();
+            log.info("Connected to target Redis at {}", redisURI);
+            RedisCommands<String, String> syncCommands = redisConnection.sync();
+
+            for (String key : keys) {
+                value.add(syncCommands.hgetall(key));
+            }
         }
 
         return value;
     }
 
-    public static ArrayList<String> pkToProcess(String tableName) throws SQLException {
+    public ArrayList<String> pkToProcess(String tableName) throws SQLException {
         Connection sqlConnection = JDBC_CONNECTION_PROVIDER.getConnection(coreConfig.getConnectionId());
         log.info("Connected to Provider at {}", sqlConnection.toString());
 

@@ -8,6 +8,7 @@ import com.redislabs.cdc.integration.test.core.CoreConfig;
 import com.redislabs.cdc.integration.test.core.IntegrationUtil;
 import com.redislabs.cdc.integration.test.core.ReadFile;
 import com.redislabs.cdc.integration.test.source.rdb.LoadRDB;
+import io.lettuce.core.RedisClient;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
 import picocli.CommandLine;
@@ -58,10 +59,11 @@ public class QueryAndCompare implements Runnable {
     }
 
     private void compareSourceAndTargetJson() {
+        IntegrationUtil integrationUtil = new IntegrationUtil();
         try {
             LoadRDB loadRDB = new LoadRDB();
             loadRDB.run();
-            Thread.sleep(10000L);
+            Thread.sleep(1000L);
             String keysFromFile = readFile.readFileAsString(keysInFile);
             // populate the keysInFile instead of user
             //String query_pkeys = "SELECT " + pKeys + " FROM " + tableName + " ORDER BY " + pKeys + ";";
@@ -81,8 +83,8 @@ public class QueryAndCompare implements Runnable {
 
 
             // Prepare target JSON object
-            //IntegrationUtil.execRedis(redisURI).flushdbAsync();
-            JsonElement targetJson = JsonParser.parseString(IntegrationUtil.hgetAllAsJsonArray(redisURI, keys).toJSONString());
+            RedisClient redisClient = RedisClient.create(redisURI);
+            JsonElement targetJson = JsonParser.parseString(integrationUtil.hgetAllAsJsonArray(redisClient, keys).toJSONString());
 
             if(log.isDebugEnabled()) {
                 log.debug("Source:\n {}", sourceJson);
@@ -91,19 +93,20 @@ public class QueryAndCompare implements Runnable {
 
             log.info("Going to compare {} source records to {} Redis target records.", keys.length, sourceList.size());
 
-            if (!IntegrationUtil.compareJson(sourceJson, targetJson)) {
-                log.info("Comparison result: {}", IntegrationUtil.compareJson(sourceJson, targetJson));
+            if (!integrationUtil.compareJson(sourceJson, targetJson)) {
+                log.info("Comparison result: {}", integrationUtil.compareJson(sourceJson, targetJson));
                 log.info("Source and Target records did not match.");
                 log.info("Source:\n {}", sourceJson);
                 log.info("Target:\n {}", targetJson);
             }
             else {
                 log.info("Source and Target records matched. Hooray!");
-                log.info("Comparison result: {}", IntegrationUtil.compareJson(sourceJson, targetJson));
+                log.info("Comparison result: {}", integrationUtil.compareJson(sourceJson, targetJson));
             }
 
             //assertEquals(sourceJson, targetJson);
 
+            redisClient.shutdown();
             } catch (Exception e) {
             e.printStackTrace();
             log.error(e.getMessage());
@@ -112,6 +115,7 @@ public class QueryAndCompare implements Runnable {
     }
 
     private void createSourceJson() {
+        IntegrationUtil integrationUtil = new IntegrationUtil();
         try {
             // Prepare Source data
             if(sourceSqlString == null) {
@@ -143,7 +147,7 @@ public class QueryAndCompare implements Runnable {
                 }
                 sourceList.add(sourceMap);
             }
-            IntegrationUtil.writeToFileAsJson(sourceJsonFile,sourceList);
+            integrationUtil.writeToFileAsJson(sourceJsonFile,sourceList);
             log.info("Got {} rows to process from {}.", sourceList.size(), sourceJsonFile);
 
         } catch (Exception e) {

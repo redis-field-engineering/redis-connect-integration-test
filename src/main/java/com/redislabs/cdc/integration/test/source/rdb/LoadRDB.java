@@ -47,14 +47,12 @@ public class LoadRDB implements Runnable {
         try {
             batchSize = (int) sourceConfig.get("batchSize");
             connection = JDBC_CONNECTION_PROVIDER.getConnection(coreConfig.getConnectionId());
-            //log.info(connection.getCatalog());
             if(truncateBeforeLoad) {
                 //delete data from table before loading csv
                 connection.createStatement().execute("DELETE FROM " + tableName);
             }
             load();
 
-            //connection.close();
         } catch (Exception e) {
             e.printStackTrace();
             log.error(e.getMessage());

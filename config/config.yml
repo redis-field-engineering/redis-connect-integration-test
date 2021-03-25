@@ -21,7 +21,7 @@ connections:
     delete: delete.sql
     sourceJsonFile: emp-source.json
     #loadQuery: "select * from dbo.emp"
-    iteration: 1
+    iteration: 20
   target:
     redisUrl: redis://35.185.69.89:14000
     keys: redis.keys

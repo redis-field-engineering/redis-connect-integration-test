@@ -11,6 +11,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.validator.GenericValidator;
 import picocli.CommandLine;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.sql.*;
@@ -39,7 +40,6 @@ public class LoadCSVAndCompare implements Runnable {
     private static final JDBCConnectionProvider JDBC_CONNECTION_PROVIDER = new JDBCConnectionProvider();
     private CoreConfig coreConfig = new CoreConfig();
     private static final Map<String, Object> sourceConfig = IntegrationConfig.INSTANCE.getEnvConfig().getConnection("source");
-    private static final String csvFile = (String) sourceConfig.get("csvFile");
     private static final String tableName = (String) sourceConfig.get("tableName");
     private static final String select = (String) sourceConfig.get("select");
     private static final String updatedSelect = (String) sourceConfig.get("updatedSelect");
@@ -65,9 +65,12 @@ public class LoadCSVAndCompare implements Runnable {
     private void doInsert() throws Exception {
         CSVReader csvReader;
         try {
+            String csvFile = (String) sourceConfig.get("csvFile");
+            File filePath = new File(System.getProperty("redislabs.integration.test.configLocation")
+                    .concat(File.separator).concat(csvFile));
 
-            csvReader = new CSVReader(new FileReader(LoadCSVAndCompare.csvFile));
-            log.info("Loading {} into {} table with batchSize={}.", LoadCSVAndCompare.csvFile, LoadCSVAndCompare.tableName, batchSize);
+            csvReader = new CSVReader(new FileReader(filePath));
+            log.info("Loading {} into {} table with batchSize={}.", filePath, LoadCSVAndCompare.tableName, batchSize);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -188,11 +191,13 @@ public class LoadCSVAndCompare implements Runnable {
     }
 
     private void doSelect() {
-        log.info("[OUTPUT FROM SELECT] {}", select);
+        File filePath = new File(System.getProperty("redislabs.integration.test.configLocation")
+                .concat(File.separator).concat(select));
+        log.info("[OUTPUT FROM SELECT] {}", filePath.getAbsolutePath());
         try {
             ReadFile readFile = new ReadFile();
             Statement st = connection.createStatement();
-            ResultSet rs = st.executeQuery(readFile.readFileAsString(select));
+            ResultSet rs = st.executeQuery(readFile.readFileAsString(filePath.getAbsolutePath()));
             ResultSetMetaData rsmd = rs.getMetaData();
             while (rs.next())
             {
@@ -207,11 +212,13 @@ public class LoadCSVAndCompare implements Runnable {
     }
 
     private void doUpdate() {
+        File filePath = new File(System.getProperty("redislabs.integration.test.configLocation")
+                .concat(File.separator).concat(update));
         log.info("\n[Performing UPDATE] ... ");
         try {
             ReadFile readFile = new ReadFile();
             Statement st = connection.createStatement();
-            st.executeUpdate(readFile.readFileAsString(update));
+            st.executeUpdate(readFile.readFileAsString(filePath.getAbsolutePath()));
         }
         catch (Exception e) {
             log.error(e.getMessage());
@@ -219,11 +226,13 @@ public class LoadCSVAndCompare implements Runnable {
     }
 
     private void doUpdatedSelect() {
-        log.info("[OUTPUT FROM SELECT] {}", updatedSelect);
+        File filePath = new File(System.getProperty("redislabs.integration.test.configLocation")
+                .concat(File.separator).concat(updatedSelect));
+        log.info("[OUTPUT FROM SELECT] {}", filePath.getAbsolutePath());
         try {
             ReadFile readFile = new ReadFile();
             Statement st = connection.createStatement();
-            ResultSet rs = st.executeQuery(readFile.readFileAsString(updatedSelect));
+            ResultSet rs = st.executeQuery(readFile.readFileAsString(filePath.getAbsolutePath()));
             ResultSetMetaData rsmd = rs.getMetaData();
             while (rs.next())
             {
@@ -238,11 +247,13 @@ public class LoadCSVAndCompare implements Runnable {
     }
 
     private void doDelete() {
+        File filePath = new File(System.getProperty("redislabs.integration.test.configLocation")
+                .concat(File.separator).concat(delete));
         log.info("\n[Performing DELETE] ... ");
         try {
             ReadFile readFile = new ReadFile();
             Statement st = connection.createStatement();
-            st.executeUpdate(readFile.readFileAsString(delete));
+            st.executeUpdate(readFile.readFileAsString(filePath.getAbsolutePath()));
         }
         catch (Exception e) {
             log.error(e.getMessage());

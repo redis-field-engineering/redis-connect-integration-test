@@ -10,6 +10,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.validator.GenericValidator;
 import picocli.CommandLine;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.sql.*;
@@ -37,10 +38,8 @@ public class LoadCSV implements Runnable {
     private static final JDBCConnectionProvider JDBC_CONNECTION_PROVIDER = new JDBCConnectionProvider();
     private CoreConfig coreConfig = new CoreConfig();
     private static final Map<String, Object> sourceConfig = IntegrationConfig.INSTANCE.getEnvConfig().getConnection("source");
-    private static final String csvFile = (String) sourceConfig.get("csvFile");
     private static final String tableName = (String) sourceConfig.get("tableName");
     private static final int batchSize = (int) sourceConfig.get("batchSize");
-    private static final String sourceJsonFile = (String) sourceConfig.get("sourceJsonFile");
     private static final String type = (String) sourceConfig.get("type");
 
     private static final Map<String, Object> targetConfig = IntegrationConfig.INSTANCE.getEnvConfig().getConnection("target");
@@ -54,9 +53,12 @@ public class LoadCSV implements Runnable {
         CSVReader csvReader;
         connection = JDBC_CONNECTION_PROVIDER.getConnection(coreConfig.getConnectionId());
         try {
+            String csvFile = (String) sourceConfig.get("csvFile");
+            File filePath = new File(System.getProperty("redislabs.integration.test.configLocation")
+                    .concat(File.separator).concat(csvFile));
 
-            csvReader = new CSVReader(new FileReader(LoadCSV.csvFile));
-            log.info("Loading {} into {} table with batchSize={}.", LoadCSV.csvFile, LoadCSV.tableName, batchSize);
+            csvReader = new CSVReader(new FileReader(filePath));
+            log.info("Loading {} into {} table with batchSize={}.", filePath, LoadCSV.tableName, batchSize);
 
         } catch (Exception e) {
             e.printStackTrace();

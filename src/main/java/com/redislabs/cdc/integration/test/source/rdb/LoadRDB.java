@@ -69,8 +69,10 @@ public class LoadRDB implements Runnable {
             query = (String) sourceConfig.get("loadQuery");
 
             if(query == null) {
-                String fileName = (String) sourceConfig.get("loadQueryFile");
-                query = readFile.readFileAsString(fileName);
+                String loadQueryFile = (String) sourceConfig.get("loadQueryFile");
+                File filePath = new File(System.getProperty("redislabs.integration.test.configLocation")
+                        .concat(File.separator).concat(loadQueryFile));
+                query = readFile.readFileAsString(filePath.getAbsolutePath());
             }
             loadStatement.executeUpdate(query);
 

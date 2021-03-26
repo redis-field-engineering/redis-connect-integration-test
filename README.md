@@ -2,7 +2,7 @@
 
 ## Download
 
-Download the [latest release](https://github.com/RedisLabs-Field-Engineering/redis-cdc-integration-test/releases) e.g. ```wget https://github.com/RedisLabs-Field-Engineering/redis-cdc-integration-test/releases/download/v1.0/redis-cdc-integration-test-1.0-SNAPSHOT.tar.gz``` and untar (tar -xvf redis-cdc-integration-test-1.0-SNAPSHOT.tar.gz) the redis-cdc-integration-test-1.0-SNAPSHOT.tar.gz archive.
+Download the [latest release](https://github.com/RedisLabs-Field-Engineering/redis-cdc-integration-test/releases) and untar (tar -xvf redis-cdc-integration-test-1.0-SNAPSHOT.tar.gz) the redis-cdc-integration-test-1.0-SNAPSHOT.tar.gz archive.
 
 All the contents would be extracted under redis-cdc-integration-test directory
 

@@ -2,7 +2,7 @@ connections:
   source:
     name: RedisLabsCDC #database name
     db: RedisLabsCDC #database
-    hostname: 35.185.69.89
+    hostname: localhost
     port: 1433
     username: sa
     password: Redis@123

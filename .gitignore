@@ -14,4 +14,4 @@ dependency-reduced-pom.xml
 README.html
 *.iml
 .idea
-logs/redis-cdc-qa.log
+**/logs/redis-cdc-qa.log

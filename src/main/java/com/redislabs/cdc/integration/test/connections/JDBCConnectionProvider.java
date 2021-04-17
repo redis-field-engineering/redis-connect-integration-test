@@ -51,7 +51,9 @@ public class JDBCConnectionProvider implements ConnectionProvider<Connection> {
             jdbcConfig.setMaximumPoolSize((Integer)databaseConfig.get("maximumPoolSize"));
             jdbcConfig.setMinimumIdle((Integer)databaseConfig.get("minimumIdle"));
 
+            log.info("establishing connection pool");
             dataSource = new HikariDataSource(jdbcConfig);
+            log.info("connection pool established");
             DATA_SOURCE_MAP.put(connectionId,dataSource);
         }
         Connection connection = null;

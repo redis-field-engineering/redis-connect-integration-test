@@ -11,7 +11,7 @@ import picocli.CommandLine;
  *
  */
 
-@CommandLine.Command(sortOptions = false, subcommands = {GenerateCompletionCommand.class, LoadRDB.class, QueryAndCompare.class, LoadCSV.class, LoadCSVAndCompare.class}, abbreviateSynopsis = true)
+@CommandLine.Command(sortOptions = false, subcommands = {GenerateCompletionCommand.class, LoadRDB.class, QueryAndCompare.class, LoadCSV.class, LoadCSVAndCompare.class, TestSet.class}, abbreviateSynopsis = true)
 public class IntegrationApp extends HelpCommand {
 
     private int executionStrategy(CommandLine.ParseResult parseResult) {

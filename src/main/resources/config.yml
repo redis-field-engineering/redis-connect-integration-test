@@ -7,7 +7,6 @@ connections:
     username: sa
     password: Redis@123
     type: mssqlserver #this value can not be changed for mssqlserver
-    jdbcUrl: "jdbc:sqlserver://35.185.69.89:1433;database=RedisLabsCDC"
     maximumPoolSize: 20
     minimumIdle: 2
     tableName: dbo.emp

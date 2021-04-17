@@ -9,7 +9,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
-import java.lang.IllegalArgumentException
+import java.lang.IllegalArgumentException;
 
 /**
  *
@@ -28,13 +28,14 @@ public class JDBCConnectionProvider implements ConnectionProvider<Connection> {
             Map<String,Object> databaseConfig = IntegrationConfig.INSTANCE.getEnvConfig().getConnection("source");
             HikariConfig jdbcConfig = new HikariConfig();
             jdbcConfig.setPoolName((String)databaseConfig.get("name"));
-            String dbType = ""
-            switch (databaseConfig.get("type").toLowerCase()) {
+            String dbType = "";
+            switch (((String)databaseConfig.get("type")).toLowerCase()) {
                 case "mssqlserver":
                 case "sqlserver":
-                    dbType = "sqlserver"
+                    dbType = "sqlserver";
+                    break;
                 default:
-                    throw IllegalArgumentException("unsupported database type in config: "+databaseConfig.get("type"))
+                    throw new IllegalArgumentException("unsupported database type in config: "+databaseConfig.get("type"));
             }
             // generate the jdbc string from the arguments
             jdbcConfig.setJdbcUrl(String.format(
@@ -43,7 +44,7 @@ public class JDBCConnectionProvider implements ConnectionProvider<Connection> {
                 databaseConfig.get("hostname"),
                 databaseConfig.get("port"),
                 databaseConfig.get("db")
-            )
+            ));
 
             jdbcConfig.setUsername((String) databaseConfig.get("username"));
             jdbcConfig.setPassword((String) databaseConfig.get("password"));

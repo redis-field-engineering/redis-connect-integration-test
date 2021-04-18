@@ -21,7 +21,7 @@
       "type": "java",
       "name": "Launch generate command",
       "request": "launch",
-      "args": "generate",
+      "args": ["generate", "--columns", "20"],
       "mainClass": "com.redislabs.cdc.integration.test.IntegrationMain",
       "projectName": "redis-cdc-integration-test"
     }

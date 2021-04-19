@@ -109,7 +109,6 @@ public class TestSet implements Runnable {
             // randomly pick a type and faker generator
             this.fakerDomainName = this.allFakerDomains[new Random().nextInt(this.allFakerDomains.length)];
             this.fakerDomain = faker.getClass().getMethod(this.fakerDomainName).invoke(faker);
-            System.err.println(this.fakerDomain.getClass().getName());
             Method[] allFakerMethods = this.getAllMethods(this.fakerDomain);
 
             // randomly pick a method
@@ -136,11 +135,9 @@ public class TestSet implements Runnable {
             } else if (Boolean.class.isInstance(tmpValue)) {
                 this.type = "BIT";
             } else {
-                throw new IllegalArgumentException("unknown data type:" + tmpValue.getClass().getName());
+                throw new IllegalArgumentException(
+                        "unknown data type for column " + this.name + " :" + tmpValue.getClass().getName());
             }
-            // TODO : add randomized data types
-            System.err.println(this.name);
-            System.err.println(this.getRandomValue());
         }
 
         public String getSqlType() {
@@ -158,7 +155,10 @@ public class TestSet implements Runnable {
             Method[] allMethods = object.getClass().getDeclaredMethods();
             ArrayList<Method> publicMethods = new ArrayList<Method>();
             for (Method method : allMethods) {
-                if (Modifier.isPublic(method.getModifiers()) && method.getParameterTypes().length == 0) {
+                if (Modifier.isPublic(method.getModifiers()) && method.getParameterTypes().length == 0
+                        && method.getReturnType().getName() != "java.util.ArrayList"
+                        && method.getReturnType().getName() != "java.util.List") {
+                    System.err.println(method.getReturnType().getName());
                     publicMethods.add(method);
                 }
             }
@@ -181,7 +181,13 @@ public class TestSet implements Runnable {
     // only returns methods that don't accept parameters for easier random use
 
     private void generate() throws Exception {
-        System.err.println(this.numberOfColumns);
+        ArrayList<Column> columns = this.createTable();
+        // create the mapper.xml for redisCDC
+        // generateMapper(columns);
+        this.generateRows(columns, this.numberOfRows);
+    }
+
+    private ArrayList<Column> createTable() throws Exception {
         // set up random column types
         ArrayList<Column> columns = new ArrayList<Column>();
         for (int i = 0; i < numberOfColumns; i++) {
@@ -209,11 +215,30 @@ public class TestSet implements Runnable {
 
         // Creating the Statement
         Statement stmt = connection.createStatement();
+        //
+        // disable CDC
+        //
+        // check if enabled
+        ResultSet rs = stmt.executeQuery(
+                String.format("SELECT * from sys.tables where name='%s' and is_tracked_by_cdc=1", tableName));
+        if (rs.next()) {
+            // disable CDC
+            String disableCdcStatement = String.format("EXEC sys.sp_cdc_disable_table @source_schema = 'dbo'"
+                    + ", @source_name = '%s'" + ", @capture_instance = 'cdcauditing_%s'", tableName, tableName);
+            stmt.execute(disableCdcStatement);
+        }
+
         stmt.execute("DROP TABLE IF EXISTS " + tableName);
         stmt.execute(query);
         log.info("Table Created");
+        return columns;
+    }
 
-        System.out.println("Generating data......");
+    private void generateRows(ArrayList<Column> columns, int numberOfRows) throws SQLException {
+        log.info("Generating data......");
+
+        // Creating the Statement
+        Statement stmt = connection.createStatement();
 
         // create insert template
         String columnsClause = String.join(",",
@@ -224,9 +249,16 @@ public class TestSet implements Runnable {
         substitutes.put("table", tableName);
         substitutes.put("values", valuesClause);
         String insertSql = new StrSubstitutor(substitutes).replace(SQL_INSERT_TEMPLATE);
-        System.err.println(insertSql);
+
+        log.debug(insertSql);
         // create prepared statement
         PreparedStatement insertStmt = connection.prepareStatement(insertSql);
+
+        // enable CDC for new table
+        String cdcStatement = String.format("EXEC sys.sp_cdc_enable_table @source_schema = 'dbo'"
+                + ", @source_name = '%s'" + ", @role_name = NULL" + ", @capture_instance = 'cdcauditing_%s'", tableName,
+                tableName);
+        stmt.execute(cdcStatement);
 
         // generate dummy data
         int rowsInserted = 0;

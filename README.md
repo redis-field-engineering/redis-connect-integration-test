@@ -1,23 +1,23 @@
-# redis-cdc-integration-test
+# redis-connect-integration-test
 
 ## Download
 
-Download the [latest release](https://github.com/RedisLabs-Field-Engineering/redis-cdc-integration-test/releases) and untar (tar -xvf redis-cdc-integration-test-1.0-SNAPSHOT.tar.gz) the redis-cdc-integration-test-1.0-SNAPSHOT.tar.gz archive.
+Download the [latest release](https://github.com/RedisLabs-Field-Engineering/redis-connect-integration-test/releases) and untar (tar -xvf redis-connect-integration-test-1.0-SNAPSHOT.tar.gz) the redis-connect-integration-test-1.0-SNAPSHOT.tar.gz archive.
 
-All the contents would be extracted under redis-cdc-integration-test directory
+All the contents would be extracted under redis-connect-integration-test directory
 
-Contents of redis-cdc-integration-test
+Contents of redis-connect-integration-test
 <br>•	bin – contains script files
 <br>•	lib – contains java libraries
 <br>•	config – contains sample config and data files for integration tests
 
 ## Launch
 
-`redis-cdc-integration-test/bin$ ./start.sh`
+`redis-connect-integration-test/bin$ ./start.sh`
 
 ```bash
-Usage: redis-cdc-integration-test [OPTIONS] [COMMAND]
-Integration test framework for redis-cdc.
+Usage: redis-connect-integration-test [OPTIONS] [COMMAND]
+Integration test framework for redis-connect.
   -h, --help   Show this help message and exit.
 Commands:
   loadsqldata        Load data into source table using sql insert statements.

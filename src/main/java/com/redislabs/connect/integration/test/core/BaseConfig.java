@@ -1,4 +1,4 @@
-package com.redislabs.cdc.integration.test.core;
+package com.redislabs.connect.integration.test.core;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;

@@ -1,4 +1,4 @@
-package com.redislabs.cdc.integration.test.core;
+package com.redislabs.connect.integration.test.core;
 
 import picocli.AutoComplete;
 import picocli.CommandLine;

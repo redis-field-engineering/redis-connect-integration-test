@@ -1,13 +1,13 @@
 connections:
   source:
-    name: RedisLabsCDC #database name
-    db: RedisLabsCDC #database
-    hostname: 35.185.69.89
+    name: RedisConnect #database name
+    db: RedisConnect #database
+    hostname: redis-connect.demo.redislabs.com
     port: 1433
     username: sa
     password: Redis@123
     type: mssqlserver #this value can not be changed for mssqlserver
-    jdbcUrl: "jdbc:sqlserver://35.185.69.89:1433;database=RedisLabsCDC"
+    jdbcUrl: "jdbc:sqlserver://redis-connect.demo.redislabs.com:1433;database=RedisConnect"
     maximumPoolSize: 20
     minimumIdle: 2
     tableName: dbo.emp
@@ -23,5 +23,5 @@ connections:
     #loadQuery: "select * from dbo.emp"
     iteration: 1
   target:
-    redisUrl: redis://35.185.69.89:14000
+    redisUrl: redis://redis-connect.demo.redislabs.com:14000
     keys: redis.keys

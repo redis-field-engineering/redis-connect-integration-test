@@ -1,4 +1,4 @@
-package com.redislabs.cdc.integration.test.connections;
+package com.redislabs.connect.integration.test.connections;
 
 import java.util.Properties;
 

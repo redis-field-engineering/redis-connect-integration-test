@@ -1,10 +1,10 @@
-package com.redislabs.cdc.integration.test.config;
+package com.redislabs.connect.integration.test.config;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.redislabs.cdc.integration.test.config.model.EnvConfig;
+import com.redislabs.connect.integration.test.config.model.EnvConfig;
 import lombok.Getter;
 
 import java.io.File;

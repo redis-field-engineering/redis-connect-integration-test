@@ -1,13 +1,13 @@
-package com.redislabs.cdc.integration.test.target.redis;
+package com.redislabs.connect.integration.test.target.redis;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import com.redislabs.cdc.integration.test.config.IntegrationConfig;
-import com.redislabs.cdc.integration.test.connections.JDBCConnectionProvider;
-import com.redislabs.cdc.integration.test.core.CoreConfig;
-import com.redislabs.cdc.integration.test.core.IntegrationUtil;
-import com.redislabs.cdc.integration.test.core.ReadFile;
-import com.redislabs.cdc.integration.test.source.rdb.LoadRDB;
+import com.redislabs.connect.integration.test.config.IntegrationConfig;
+import com.redislabs.connect.integration.test.connections.JDBCConnectionProvider;
+import com.redislabs.connect.integration.test.core.CoreConfig;
+import com.redislabs.connect.integration.test.core.IntegrationUtil;
+import com.redislabs.connect.integration.test.core.ReadFile;
+import com.redislabs.connect.integration.test.source.rdb.LoadRDB;
 import io.lettuce.core.RedisClient;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
@@ -33,6 +33,7 @@ public class QueryAndCompare implements Runnable {
     private static final Map<String, Object> sourceConfig = IntegrationConfig.INSTANCE.getEnvConfig().getConnection("source");
     private static final String sourceJsonFile = (String) sourceConfig.get("sourceJsonFile");
     private static final String loadQuery = (String) sourceConfig.get("loadQuery");
+    private static final String select = (String) sourceConfig.get("select");
     private static final int batchSize = (int) sourceConfig.get("batchSize");
     private static String query = null;
 
@@ -64,8 +65,9 @@ public class QueryAndCompare implements Runnable {
             LoadRDB loadRDB = new LoadRDB();
             loadRDB.run();
             Thread.sleep(1000L);
-            File keysInFilePath = new File(System.getProperty("redislabs.integration.test.configLocation")
+            File keysInFilePath = new File(System.getProperty(IntegrationConfig.INSTANCE.getCONFIG_LOCATION_PROPERTY())
                     .concat(File.separator).concat(keysInFile));
+
             String keysFromFile = readFile.readFileAsString(keysInFilePath.getAbsolutePath());
             // populate the keysInFile instead of user
             //String query_pkeys = "SELECT " + pKeys + " FROM " + tableName + " ORDER BY " + pKeys + ";";
@@ -79,8 +81,9 @@ public class QueryAndCompare implements Runnable {
             // execute the query and create a json output of the source DB
             createSourceJson();
             // read the source json output as JSONArray
-            File sourceJsonFilePath = new File(System.getProperty("redislabs.integration.test.configLocation")
+            File sourceJsonFilePath = new File(System.getProperty(IntegrationConfig.INSTANCE.getCONFIG_LOCATION_PROPERTY())
                     .concat(File.separator).concat(sourceJsonFile));
+
             JSONArray sourceList = readFile.readFileAsJson(sourceJsonFilePath.getAbsolutePath());
             // parse JSONArray as JSONString
             JsonElement sourceJson = JsonParser.parseString(sourceList.toJSONString());
@@ -121,8 +124,7 @@ public class QueryAndCompare implements Runnable {
     private void createSourceJson() {
         IntegrationUtil integrationUtil = new IntegrationUtil();
         try {
-            String select = (String) sourceConfig.get("select");
-            File selectFilePath = new File(System.getProperty("redislabs.integration.test.configLocation")
+            File selectFilePath = new File(System.getProperty(IntegrationConfig.INSTANCE.getCONFIG_LOCATION_PROPERTY())
                     .concat(File.separator).concat(select));
             // Prepare Source data
             if(loadQuery == null) {
@@ -154,7 +156,7 @@ public class QueryAndCompare implements Runnable {
                 }
                 sourceList.add(sourceMap);
             }
-            File sourceJsonFilePath = new File(System.getProperty("redislabs.integration.test.configLocation")
+            File sourceJsonFilePath = new File(System.getProperty(IntegrationConfig.INSTANCE.getCONFIG_LOCATION_PROPERTY())
                     .concat(File.separator).concat(sourceJsonFile));
             integrationUtil.writeToFileAsJson(sourceJsonFilePath.getAbsolutePath(),sourceList);
             log.info("Got {} rows to process from {}.", sourceList.size(), sourceJsonFilePath.getAbsolutePath());

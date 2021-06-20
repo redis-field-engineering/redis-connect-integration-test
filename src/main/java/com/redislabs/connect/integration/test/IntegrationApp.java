@@ -1,8 +1,8 @@
-package com.redislabs.cdc.integration.test;
+package com.redislabs.connect.integration.test;
 
-import com.redislabs.cdc.integration.test.core.*;
-import com.redislabs.cdc.integration.test.source.rdb.LoadRDB;
-import com.redislabs.cdc.integration.test.target.redis.QueryAndCompare;
+import com.redislabs.connect.integration.test.core.*;
+import com.redislabs.connect.integration.test.source.rdb.LoadRDB;
+import com.redislabs.connect.integration.test.target.redis.QueryAndCompare;
 import picocli.CommandLine;
 
 /**

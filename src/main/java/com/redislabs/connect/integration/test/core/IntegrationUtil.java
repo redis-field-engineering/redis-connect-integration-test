@@ -1,17 +1,14 @@
-package com.redislabs.cdc.integration.test.core;
+package com.redislabs.connect.integration.test.core;
 
-import brave.Tracing;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.redislabs.cdc.integration.test.config.IntegrationConfig;
-import com.redislabs.cdc.integration.test.connections.JDBCConnectionProvider;
+import com.redislabs.connect.integration.test.config.IntegrationConfig;
+import com.redislabs.connect.integration.test.connections.JDBCConnectionProvider;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
-import io.lettuce.core.resource.DefaultClientResources;
-import io.lettuce.core.tracing.BraveTracing;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -23,11 +20,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
@@ -49,10 +41,12 @@ public class IntegrationUtil {
     private RedisClient redisClient = null;
     private String redisUri;
 
+    /*
     public static String removeTrailingZeroes(String  s) {
         //return s.indexOf(".") < 0 ? s : s.replaceAll("0*$", "").replaceAll("\\.$", "");
         return s.replaceAll("(?!^)0+$", "");
     }
+     */
 
     public static String fmtDouble(double d) {
         return String.format("%s", d);
@@ -147,6 +141,7 @@ public class IntegrationUtil {
         return isEqual;
     }
 
+    /*
     public RedisCommands<String, String> traceRedis(RedisClient client) {
         redisClient = client;
         StatefulRedisConnection<String, String> redisConnection = null;
@@ -165,6 +160,7 @@ public class IntegrationUtil {
 
         return redisConnection.sync();
     }
+     */
 
     public RedisCommands<String, String> execRedis(RedisClient client) {
         redisClient = client;
@@ -180,10 +176,7 @@ public class IntegrationUtil {
         return redisConnection.sync();
     }
 
-    /**
-     * @param keys <keys>List of Redis keys.</keys>
-     * @return output as org.json.simple.JSONArray
-     */
+    /*
     public JSONArray traceHgetAllAsJsonArray(RedisClient client, String[] keys) {
         redisClient = client;
         client =
@@ -204,6 +197,7 @@ public class IntegrationUtil {
 
         return value;
     }
+     */
 
     /**
      * @param keys <keys>List of Redis keys.</keys>
@@ -225,6 +219,7 @@ public class IntegrationUtil {
         return value;
     }
 
+    /*
     public ArrayList<String> pkToProcess(String tableName) throws SQLException {
         Connection sqlConnection = JDBC_CONNECTION_PROVIDER.getConnection(coreConfig.getConnectionId());
         log.info("Connected to Provider at {}", sqlConnection.toString());
@@ -240,5 +235,6 @@ public class IntegrationUtil {
 
         return primaryKeys;
     }
+     */
 
 }

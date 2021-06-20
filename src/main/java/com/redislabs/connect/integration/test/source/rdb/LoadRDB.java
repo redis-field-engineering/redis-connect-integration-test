@@ -1,9 +1,9 @@
-package com.redislabs.cdc.integration.test.source.rdb;
+package com.redislabs.connect.integration.test.source.rdb;
 
-import com.redislabs.cdc.integration.test.config.IntegrationConfig;
-import com.redislabs.cdc.integration.test.connections.JDBCConnectionProvider;
-import com.redislabs.cdc.integration.test.core.CoreConfig;
-import com.redislabs.cdc.integration.test.core.ReadFile;
+import com.redislabs.connect.integration.test.config.IntegrationConfig;
+import com.redislabs.connect.integration.test.connections.JDBCConnectionProvider;
+import com.redislabs.connect.integration.test.core.CoreConfig;
+import com.redislabs.connect.integration.test.core.ReadFile;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -30,13 +30,15 @@ public class LoadRDB implements Runnable {
     private static final JDBCConnectionProvider JDBC_CONNECTION_PROVIDER = new JDBCConnectionProvider();
     private static final Map<String, Object> sourceConfig = IntegrationConfig.INSTANCE.getEnvConfig().getConnection("source");
     private static final String tableName = (String) sourceConfig.get("tableName");
+    private static String loadQuery = (String) sourceConfig.get("loadQuery");
+    private static final String loadQueryFile = (String) sourceConfig.get("loadQueryFile");
     private CoreConfig coreConfig = new CoreConfig();
     private static final Map<String, Object> targetConfig = IntegrationConfig.INSTANCE.getEnvConfig().getConnection("target");
 
     protected int batchSize = 5000;
     private Connection connection;
+    private File filePath;
     private int startRecord;
-    private String query;
     private File sqlFileName;
     private StringBuffer sb;
     @CommandLine.Option(names = "--truncateBeforeLoad", description = "Truncate the source table before load", paramLabel = "<boolean>")
@@ -66,15 +68,12 @@ public class LoadRDB implements Runnable {
             Statement loadStatement = connection.createStatement();
             loadStatement.setFetchSize(batchSize);
 
-            query = (String) sourceConfig.get("loadQuery");
-
-            if(query == null) {
-                String loadQueryFile = (String) sourceConfig.get("loadQueryFile");
-                File filePath = new File(System.getProperty("redislabs.integration.test.configLocation")
+            if(loadQuery == null) {
+                filePath = new File(System.getProperty(IntegrationConfig.INSTANCE.getCONFIG_LOCATION_PROPERTY())
                         .concat(File.separator).concat(loadQueryFile));
-                query = readFile.readFileAsString(filePath.getAbsolutePath());
+                loadQuery = readFile.readFileAsString(filePath.getAbsolutePath());
             }
-            loadStatement.executeUpdate(query);
+            loadStatement.executeUpdate(loadQuery);
 
             loadStatement.close();
             connection.close();

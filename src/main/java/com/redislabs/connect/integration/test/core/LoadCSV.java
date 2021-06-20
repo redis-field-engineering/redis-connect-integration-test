@@ -1,8 +1,8 @@
-package com.redislabs.cdc.integration.test.core;
+package com.redislabs.connect.integration.test.core;
 
 import com.opencsv.CSVReader;
-import com.redislabs.cdc.integration.test.config.IntegrationConfig;
-import com.redislabs.cdc.integration.test.connections.JDBCConnectionProvider;
+import com.redislabs.connect.integration.test.config.IntegrationConfig;
+import com.redislabs.connect.integration.test.connections.JDBCConnectionProvider;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -54,7 +54,7 @@ public class LoadCSV implements Runnable {
         connection = JDBC_CONNECTION_PROVIDER.getConnection(coreConfig.getConnectionId());
         try {
             String csvFile = (String) sourceConfig.get("csvFile");
-            File filePath = new File(System.getProperty("redislabs.integration.test.configLocation")
+            File filePath = new File(System.getProperty(IntegrationConfig.INSTANCE.getCONFIG_LOCATION_PROPERTY())
                     .concat(File.separator).concat(csvFile));
 
             csvReader = new CSVReader(new FileReader(filePath));
@@ -87,12 +87,11 @@ public class LoadCSV implements Runnable {
         log.info("Insert Query: {}.", insert_query);
 
         String[] rowData;
-        Connection con = null;
+        Connection con;
         PreparedStatement ps;
 
         try {
             con = this.connection;
-            con.setAutoCommit(false);
             if(truncateBeforeLoad) {
                 //delete data from table before loading csv
                 con.createStatement().execute("DELETE FROM " + LoadCSV.tableName);
@@ -132,12 +131,10 @@ public class LoadCSV implements Runnable {
             ps.executeBatch(); // insert remaining
 
             log.info("Inserted {} row(s) into {} table.", rowDataList.size(), LoadCSV.tableName);
-            // commit and close connection
-            con.commit();
+            // close connections
             ps.close();
             csvReader.close();
         } catch (Exception e) {
-            con.rollback();
             e.printStackTrace();
             throw new Exception(
                     "Error occurred while loading data from file to database."

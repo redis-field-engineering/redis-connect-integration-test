@@ -1,4 +1,4 @@
-package com.redislabs.cdc.integration.test.config.model;
+package com.redislabs.connect.integration.test.config.model;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import lombok.Getter;

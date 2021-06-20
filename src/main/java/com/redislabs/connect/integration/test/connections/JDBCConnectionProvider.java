@@ -1,6 +1,6 @@
-package com.redislabs.cdc.integration.test.connections;
+package com.redislabs.connect.integration.test.connections;
 
-import com.redislabs.cdc.integration.test.config.IntegrationConfig;
+import com.redislabs.connect.integration.test.config.IntegrationConfig;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.extern.slf4j.Slf4j;

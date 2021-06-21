@@ -2,7 +2,7 @@
 
 ## Download
 
-Download the [latest release](https://github.com/RedisLabs-Field-Engineering/redis-connect-integration-test/releases) and untar (tar -xvf redis-connect-integration-test-1.0-SNAPSHOT.tar.gz) the redis-connect-integration-test-1.0-SNAPSHOT.tar.gz archive.
+Download the [latest release](https://github.com/RedisLabs-Field-Engineering/redis-connect-integration-test/releases) and untar (tar -xvf redis-connect-integration-test-1.0.0.tar.gz) the redis-connect-integration-test-1.0.0.tar.gz archive.
 
 All the contents would be extracted under redis-connect-integration-test directory
 
@@ -13,7 +13,10 @@ Contents of redis-connect-integration-test
 
 ## Launch
 
-`redis-connect-integration-test/bin$ ./start.sh`
+<br>[*nix OS](https://en.wikipedia.org/wiki/Unix-like):
+`redis-connect-crud-loader/bin$ ./start.sh`
+<br>Windows OS:
+`redis-connect-crud-loader\bin> start.bat`
 
 ```bash
 Usage: redis-connect-integration-test [OPTIONS] [COMMAND]

@@ -2,13 +2,19 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <parent>
+        <artifactId>redis-connect</artifactId>
+        <groupId>redis-connect</groupId>
+        <version>1.0.2</version>
+    </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.redislabs.connect.integration.test</groupId>
     <artifactId>redis-connect-integration-test</artifactId>
     <name>Redis Connect Integration Test Framework</name>
     <description>Integration tests for Redis Connect</description>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0</version>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -17,6 +23,15 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <!-- This jar can be found in the RedisCDC connector lib folder and installed using maven
+            install-file goal on the command line, http://maven.apache.org/general.html#importing-jars
+            or imported directly into this project -->
+            <groupId>redis-connect</groupId>
+            <artifactId>connect-core</artifactId>
+            <version>1.0.2</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
@@ -55,7 +70,7 @@
         <dependency>
             <groupId>io.lettuce</groupId>
             <artifactId>lettuce-core</artifactId>
-            <version>6.0.3.RELEASE</version>
+            <version>6.1.2.RELEASE</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>

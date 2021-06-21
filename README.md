@@ -14,9 +14,9 @@ Contents of redis-connect-integration-test
 ## Launch
 
 <br>[*nix OS](https://en.wikipedia.org/wiki/Unix-like):
-`redis-connect-crud-loader/bin$ ./start.sh`
+`redis-connect-integration-test/bin$ ./start.sh`
 <br>Windows OS:
-`redis-connect-crud-loader\bin> start.bat`
+`redis-connect-integration-test\bin> start.bat`
 
 ```bash
 Usage: redis-connect-integration-test [OPTIONS] [COMMAND]

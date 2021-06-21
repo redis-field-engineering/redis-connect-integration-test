@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-<br>• RedisConnect connector (e.g. SQL Server connector) is setup and running with the same source database, schema and table(s) as redis-connect-integration-test.
+<br>• Redis Connect connector (e.g. SQL Server connector) is setup and running with the same source database, schema and table(s) as redis-connect-integration-test.
 <br>• Please have Java Runtime Environment ([OpenJRE](https://openjdk.java.net/install/) or OracleJRE) installed prior to running redis-connect-integration-test.
 
 ## Download

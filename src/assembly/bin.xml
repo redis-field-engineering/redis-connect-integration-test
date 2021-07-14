@@ -32,12 +32,7 @@
             <directory>config</directory>
             <outputDirectory>${project.file.parentFile.name}/config</outputDirectory>
             <includes>
-                <include>*.yml</include>
-                <include>*.json</include>
-                <include>*.sql</include>
-                <include>*.keys</include>
-                <include>*.xml</include>
-                <include>*.csv</include>
+                <include>*.*</include>
             </includes>
         </fileSet>
     </fileSets>

@@ -1,1 +1,1 @@
-com.redislabs.connect.integration.test.source.rdb.IntegrityTestPostProcessor
+com.redislabs.connect.integration.test.source.rdb.PrintCEPostProcessor

@@ -28,6 +28,7 @@ Usage: redis-connect-integration-test [OPTIONS] [COMMAND]
 Integration test framework for redis-connect.
   -h, --help   Show this help message and exit.
 Commands:
+  compare            Compares Source and Target raw events in the same sequence as it occurs. 
   loadsqldata        Load data into source table using sql insert statements.
   loadsqlandcompare  Load source table with sql inserts and compare them with target JSON objects.
   loadcsvdata        Load CSV data to source table.

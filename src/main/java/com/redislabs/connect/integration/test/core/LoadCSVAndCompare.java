@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.validator.GenericValidator;
 import picocli.CommandLine;
 
@@ -169,6 +170,9 @@ public class LoadCSVAndCompare implements Runnable {
             long timeElapsed = Duration.between(start, finish).toMillis();
             log.info("It took {} ms to load {} csv records.", timeElapsed, count);
         } catch (Exception e) {
+            log.error("MESSAGE: {} STACKTRACE: {}",
+                    ExceptionUtils.getRootCauseMessage(e),
+                    ExceptionUtils.getRootCauseStackTrace(e));
             e.printStackTrace();
             throw new Exception(
                     "Error occurred while loading data from csv file to the database."
@@ -189,8 +193,10 @@ public class LoadCSVAndCompare implements Runnable {
             stmt.close();
             rs.close();
         } catch(Exception e) {
+            log.error("MESSAGE: {} STACKTRACE: {}",
+                    ExceptionUtils.getRootCauseMessage(e),
+                    ExceptionUtils.getRootCauseStackTrace(e));
             e.printStackTrace();
-            log.error(e.getMessage());
         }
 
     }
@@ -215,8 +221,10 @@ public class LoadCSVAndCompare implements Runnable {
             st.close();
         }
         catch (Exception e) {
+            log.error("MESSAGE: {} STACKTRACE: {}",
+                    ExceptionUtils.getRootCauseMessage(e),
+                    ExceptionUtils.getRootCauseStackTrace(e));
             e.printStackTrace();
-            log.error(e.getMessage());
         }
     }
 
@@ -245,8 +253,10 @@ public class LoadCSVAndCompare implements Runnable {
             st.close();
         }
         catch (Exception e) {
+            log.error("MESSAGE: {} STACKTRACE: {}",
+                    ExceptionUtils.getRootCauseMessage(e),
+                    ExceptionUtils.getRootCauseStackTrace(e));
             e.printStackTrace();
-            log.error(e.getMessage());
         }
     }
 
@@ -269,8 +279,10 @@ public class LoadCSVAndCompare implements Runnable {
 
         }
         catch (Exception e) {
+            log.error("MESSAGE: {} STACKTRACE: {}",
+                    ExceptionUtils.getRootCauseMessage(e),
+                    ExceptionUtils.getRootCauseStackTrace(e));
             e.printStackTrace();
-            log.error(e.getMessage());
         }
     }
 
@@ -299,8 +311,10 @@ public class LoadCSVAndCompare implements Runnable {
             st.close();
         }
         catch (Exception e) {
+            log.error("MESSAGE: {} STACKTRACE: {}",
+                    ExceptionUtils.getRootCauseMessage(e),
+                    ExceptionUtils.getRootCauseStackTrace(e));
             e.printStackTrace();
-            log.error(e.getMessage());
         }
     }
 
@@ -313,8 +327,10 @@ public class LoadCSVAndCompare implements Runnable {
             st.close();
         }
         catch (Exception e) {
+            log.error("MESSAGE: {} STACKTRACE: {}",
+                    ExceptionUtils.getRootCauseMessage(e),
+                    ExceptionUtils.getRootCauseStackTrace(e));
             e.printStackTrace();
-            log.error(e.getMessage());
         }
     }
 
@@ -365,8 +381,10 @@ public class LoadCSVAndCompare implements Runnable {
             log.info("It took {} ms to run {} iterations.", timeElapsed, iteration);
             connection.close();
         } catch (Exception e) {
+            log.error("MESSAGE: {} STACKTRACE: {}",
+                    ExceptionUtils.getRootCauseMessage(e),
+                    ExceptionUtils.getRootCauseStackTrace(e));
             e.printStackTrace();
-            log.error(e.getMessage());
         }
 
     }

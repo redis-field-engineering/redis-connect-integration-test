@@ -10,6 +10,7 @@ import com.redislabs.connect.integration.test.core.ReadFile;
 import com.redislabs.connect.integration.test.source.rdb.LoadRDB;
 import io.lettuce.core.RedisClient;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.json.simple.JSONArray;
 import picocli.CommandLine;
 
@@ -115,8 +116,10 @@ public class QueryAndCompare implements Runnable {
 
             redisClient.shutdown();
             } catch (Exception e) {
+            log.error("MESSAGE: {} STACKTRACE: {}",
+                    ExceptionUtils.getRootCauseMessage(e),
+                    ExceptionUtils.getRootCauseStackTrace(e));
             e.printStackTrace();
-            log.error(e.getMessage());
         }
 
     }
@@ -162,7 +165,9 @@ public class QueryAndCompare implements Runnable {
             log.info("Got {} rows to process from {}.", sourceList.size(), sourceJsonFilePath.getAbsolutePath());
 
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error("MESSAGE: {} STACKTRACE: {}",
+                    ExceptionUtils.getRootCauseMessage(e),
+                    ExceptionUtils.getRootCauseStackTrace(e));
             e.printStackTrace();
         }
     }
@@ -178,7 +183,9 @@ public class QueryAndCompare implements Runnable {
             resultSet = preparedStatement.executeQuery();
 
         } catch(SQLException e) {
-            log.error(e.getMessage());
+            log.error("MESSAGE: {} STACKTRACE: {}",
+                    ExceptionUtils.getRootCauseMessage(e),
+                    ExceptionUtils.getRootCauseStackTrace(e));
             e.printStackTrace();
         }
 

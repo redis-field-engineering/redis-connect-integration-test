@@ -20,7 +20,7 @@ import java.util.Map;
 @Getter
 public enum IntegrationConfig {
     INSTANCE;
-    String CONFIG_LOCATION_PROPERTY = "redislabs.integration.test.configLocation";
+    String CONFIG_LOCATION_PROPERTY = "redisconnect.integration.test.configLocation";
     ObjectMapper yamlObjectMapper;
     ObjectMapper objectMapper;
 

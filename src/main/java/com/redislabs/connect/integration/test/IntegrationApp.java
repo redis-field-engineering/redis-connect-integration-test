@@ -2,6 +2,7 @@ package com.redislabs.connect.integration.test;
 
 import com.redislabs.connect.integration.test.core.*;
 import com.redislabs.connect.integration.test.source.rdb.LoadRDB;
+import com.redislabs.connect.integration.test.target.redis.CompareSourceAndTarget;
 import com.redislabs.connect.integration.test.target.redis.QueryAndCompare;
 import picocli.CommandLine;
 
@@ -11,7 +12,7 @@ import picocli.CommandLine;
  *
  */
 
-@CommandLine.Command(sortOptions = false, subcommands = {GenerateCompletionCommand.class, LoadRDB.class, QueryAndCompare.class, LoadCSV.class, LoadCSVAndCompare.class}, abbreviateSynopsis = true)
+@CommandLine.Command(sortOptions = false, subcommands = {GenerateCompletionCommand.class, LoadRDB.class, QueryAndCompare.class, CompareSourceAndTarget.class, LoadCSV.class, LoadCSVAndCompare.class}, abbreviateSynopsis = true)
 public class IntegrationApp extends HelpCommand {
 
     private int executionStrategy(CommandLine.ParseResult parseResult) {

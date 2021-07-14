@@ -4,6 +4,7 @@ import com.redislabs.connect.integration.test.config.IntegrationConfig;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -40,8 +41,10 @@ public class JDBCConnectionProvider implements ConnectionProvider<Connection> {
         try {
             connection = dataSource.getConnection();
         } catch (SQLException e) {
+            log.error("MESSAGE: {} STACKTRACE: {}",
+                    ExceptionUtils.getRootCauseMessage(e),
+                    ExceptionUtils.getRootCauseStackTrace(e));
             e.printStackTrace();
-            log.error(e.getMessage());
         }
         return connection;
     }

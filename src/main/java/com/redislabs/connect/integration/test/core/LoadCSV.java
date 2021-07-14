@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.validator.GenericValidator;
 import picocli.CommandLine;
 
@@ -61,6 +62,9 @@ public class LoadCSV implements Runnable {
             log.info("Loading {} into {} table with batchSize={}.", filePath, LoadCSV.tableName, batchSize);
 
         } catch (Exception e) {
+            log.error("MESSAGE: {} STACKTRACE: {}",
+                    ExceptionUtils.getRootCauseMessage(e),
+                    ExceptionUtils.getRootCauseStackTrace(e));
             e.printStackTrace();
             throw new Exception("Error occurred while executing file. "
                     + e.getMessage());
@@ -135,6 +139,9 @@ public class LoadCSV implements Runnable {
             ps.close();
             csvReader.close();
         } catch (Exception e) {
+            log.error("MESSAGE: {} STACKTRACE: {}",
+                    ExceptionUtils.getRootCauseMessage(e),
+                    ExceptionUtils.getRootCauseStackTrace(e));
             e.printStackTrace();
             throw new Exception(
                     "Error occurred while loading data from file to database."
@@ -148,6 +155,9 @@ public class LoadCSV implements Runnable {
             LoadCSV loadCsv = new LoadCSV();
             loadCsv.loadCSV(isTruncateBeforeLoad());
         } catch (Exception e) {
+            log.error("MESSAGE: {} STACKTRACE: {}",
+                    ExceptionUtils.getRootCauseMessage(e),
+                    ExceptionUtils.getRootCauseStackTrace(e));
             e.printStackTrace();
         }
     }

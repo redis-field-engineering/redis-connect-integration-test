@@ -34,3 +34,15 @@ Commands:
   loadcsvdata        Load CSV data to source table.
   loadcsvandcompare  Load CSV data to source and print live comparisons.
 ```
+---
+
+| :memo:        |
+|---------------|
+Pre- / Post-Processor usage: Use this in JobConfig.yml for the `eventTranslator`:
+
+````yaml
+eventTranslatorConfig:
+translator: "PRINT_RAW_CE"
+preprocessor: PrintCEPostProcessor
+#postprocessor: PrintCEPostProcessor
+````

@@ -1,14 +1,14 @@
-package com.redislabs.connect.integration.test.core;
+package com.redis.connect.integration.test.core;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.redislabs.connect.integration.test.config.IntegrationConfig;
-import com.redislabs.connect.integration.test.connections.JDBCConnectionProvider;
-import io.lettuce.core.RedisClient;
-import io.lettuce.core.api.StatefulRedisConnection;
-import io.lettuce.core.api.sync.RedisCommands;
+import com.redis.connect.integration.test.config.IntegrationConfig;
+import com.redis.connect.integration.test.connections.JDBCConnectionProvider;
+import com.redis.lettucemod.RedisModulesClient;
+import com.redis.lettucemod.api.StatefulRedisModulesConnection;
+import com.redis.lettucemod.api.sync.RedisModulesCommands;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -35,15 +35,8 @@ public class IntegrationUtil {
 
     private static final Map<String, Object> targetConfig = IntegrationConfig.INSTANCE.getEnvConfig().getConnection("target");
     private static final String redisURI = (String) targetConfig.get("redisUrl");
-    private RedisClient redisClient = null;
+    private RedisModulesClient redisClient = null;
     private String redisUri;
-
-    /*
-    public static String removeTrailingZeroes(String  s) {
-        //return s.indexOf(".") < 0 ? s : s.replaceAll("0*$", "").replaceAll("\\.$", "");
-        return s.replaceAll("(?!^)0+$", "");
-    }
-     */
 
     public static String fmtDouble(double d) {
         return String.format("%s", d);
@@ -79,6 +72,7 @@ public class IntegrationUtil {
      * @param content  contents to write
      * @throws IOException throws IOException
      */
+    @SuppressWarnings("unused")
     public void writeToFile(String fileName, String content) throws IOException {
         FileWriter fw = new FileWriter(fileName, true);
         PrintWriter pw = new PrintWriter(fw);
@@ -103,6 +97,7 @@ public class IntegrationUtil {
         channel.close();
     }
 
+    @SuppressWarnings("unused")
     public void appendToFileAsJson(String file, Object content) throws IOException {
         Set<StandardOpenOption> options = new HashSet<>();
         options.add(StandardOpenOption.CREATE);
@@ -170,50 +165,28 @@ public class IntegrationUtil {
 
             // Check whether both jsonElement are primitives
             else if (json1.isJsonPrimitive() && json2.isJsonPrimitive()) {
-                if (json1.equals(json2)) {
-                    return true;
-                } else {
-                    return false;
-                }
+                return json1.equals(json2);
             } else {
                 return false;
             }
-        } else if (json1 == null && json2 == null) {
-            return true;
-        } else {
-            return false;
-        }
+        } else return json1 == null && json2 == null;
         return isEqual;
-    }
-
-    public RedisCommands<String, String> execRedis(RedisClient client) {
-        redisClient = client;
-        StatefulRedisConnection<String, String> redisConnection = null;
-
-        if (client != null) {
-            redisConnection = client.connect();
-            if (log.isDebugEnabled())
-                log.debug("Connected to target Redis at {}", redisUri);
-        }
-
-        assert redisConnection != null;
-        return redisConnection.sync();
     }
 
     /**
      * @param keys <keys>List of Redis keys.</keys>
      * @return output as org.json.simple.JSONArray
      */
-    public JSONArray hgetAllAsJsonArray(RedisClient client, String[] keys) {
+    public JSONArray hgetAllAsJsonArray(RedisModulesClient client, String[] keys) {
         JSONArray value = new JSONArray();
         if (client != null && keys.length != 0) {
             redisClient = client;
-            StatefulRedisConnection<String, String> redisConnection = client.connect();
+            StatefulRedisModulesConnection<String, String> redisConnection = client.connect();
             log.info("Connected to target Redis at {}", redisURI);
-            RedisCommands<String, String> syncCommands = redisConnection.sync();
+            RedisModulesCommands<String, String> syncCommands = redisConnection.sync();
 
             for (String key : keys) {
-                value.add(syncCommands.hgetall(key));
+                value.add(syncCommands.hgetall(key))
             }
         }
 

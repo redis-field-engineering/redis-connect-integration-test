@@ -1,4 +1,4 @@
-<configuration debug="true" scan="true" scanPeriod="30 seconds">
+<configuration debug="true" scan="true" scanPeriod="15 seconds">
     <property name="LOG_PATH" value="logs/redis-connect-qa.log"/>
     <appender name="FILE-ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_PATH}</file>
@@ -16,7 +16,7 @@
         </encoder>
     </appender>
 
-    <logger name="com.redislabs" level="INFO" additivity="false">
+    <logger name="com.redis" level="INFO" additivity="false">
         <appender-ref ref="FILE-ROLLING"/>
     </logger>
     <logger name="io.netty" level="INFO" additivity="false">

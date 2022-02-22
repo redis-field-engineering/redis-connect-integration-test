@@ -1,9 +1,9 @@
-package com.redislabs.connect.integration.test.source.rdb;
+package com.redis.connect.integration.test.source.rdb;
 
-import com.redislabs.connect.integration.test.config.IntegrationConfig;
-import com.redislabs.connect.integration.test.connections.JDBCConnectionProvider;
-import com.redislabs.connect.integration.test.core.CoreConfig;
-import com.redislabs.connect.integration.test.core.ReadFile;
+import com.redis.connect.integration.test.config.IntegrationConfig;
+import com.redis.connect.integration.test.connections.JDBCConnectionProvider;
+import com.redis.connect.integration.test.core.CoreConfig;
+import com.redis.connect.integration.test.core.ReadFile;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;

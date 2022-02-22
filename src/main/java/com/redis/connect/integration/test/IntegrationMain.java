@@ -1,4 +1,4 @@
-package com.redislabs.connect.integration.test;
+package com.redis.connect.integration.test;
 
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine.Command;

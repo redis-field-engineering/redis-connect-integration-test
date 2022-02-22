@@ -1,4 +1,4 @@
-package com.redislabs.connect.integration.test.core;
+package com.redis.connect.integration.test.core;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
@@ -48,11 +48,11 @@ public class BaseConfig {
     }
 
     public Object getValue(String propertyName, Object defaultVal) {
-        return configurationDetails.containsKey(propertyName) ? configurationDetails.get(propertyName) : defaultVal;
+        return configurationDetails.getOrDefault(propertyName, defaultVal);
     }
 
     public Object getValue(String propertyName, Map<String,?> defaultVal) {
-        return configurationDetails.containsKey(propertyName) ? configurationDetails.get(propertyName) : defaultVal;
+        return configurationDetails.getOrDefault(propertyName, defaultVal);
     }
 
     public boolean containsProperty(String propertyName) {
@@ -62,15 +62,13 @@ public class BaseConfig {
     //Object to String
     public String objectToString(Object object){
         Gson gson=new Gson();
-        String jsonStr=gson.toJson(object);
-        return jsonStr;
+        return gson.toJson(object);
     }
 
     //String to Object
     public Object strToObject(String str){
         Gson gson=new Gson();
-        Object object=gson.fromJson(str,Object.class);
-        return object;
+        return gson.fromJson(str,Object.class);
     }
 
     //String to JSON

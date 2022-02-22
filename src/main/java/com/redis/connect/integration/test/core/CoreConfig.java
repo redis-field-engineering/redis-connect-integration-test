@@ -1,4 +1,4 @@
-package com.redislabs.connect.integration.test.core;
+package com.redis.connect.integration.test.core;
 
 import lombok.Getter;
 import lombok.Setter;

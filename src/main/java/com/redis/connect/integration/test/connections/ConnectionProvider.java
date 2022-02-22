@@ -1,4 +1,4 @@
-package com.redislabs.connect.integration.test.connections;
+package com.redis.connect.integration.test.connections;
 
 import java.util.Properties;
 

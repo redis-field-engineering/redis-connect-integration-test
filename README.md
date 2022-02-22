@@ -7,7 +7,7 @@
 
 ## Download
 
-Download the [latest release](https://github.com/RedisLabs-Field-Engineering/redis-connect-integration-test/releases) and untar (tar -xvf redis-connect-integration-test-1.0.0.tar.gz) the redis-connect-integration-test-1.0.0.tar.gz archive.
+Download the [latest release](https://github.com/redis-field-engineering/redis-connect-integration-test/releases) and un-tar (e.g. tar -xvf redis-connect-integration-test-1.0.1.tar.gz) the archive.
 
 All the contents would be extracted under redis-connect-integration-test directory
 

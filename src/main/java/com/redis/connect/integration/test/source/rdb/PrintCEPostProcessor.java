@@ -1,14 +1,14 @@
-package com.redislabs.connect.integration.test.source.rdb;
+package com.redis.connect.integration.test.source.rdb;
 
-import com.redislabs.connect.ConnectConstants;
-import com.redislabs.connect.core.model.ChangeEvent;
-import com.redislabs.connect.core.model.OperationType;
-import com.redislabs.connect.mapper.ColumnField;
-import com.redislabs.connect.mapper.MapperConfig;
-import com.redislabs.connect.mapper.MapperProvider;
-import com.redislabs.connect.model.Col;
-import com.redislabs.connect.model.Operation;
-import com.redislabs.connect.transformer.Transformer;
+import com.redis.connect.dto.ChangeEvent;
+import com.redis.connect.dto.OperationType;
+import com.redis.connect.pipeline.event.model.Col;
+import com.redis.connect.pipeline.event.model.Operation;
+import com.redis.connect.pipeline.event.translators.mapper.ColumnField;
+import com.redis.connect.pipeline.event.translators.mapper.MapperConfig;
+import com.redis.connect.pipeline.event.translators.mapper.MapperProvider;
+import com.redis.connect.pipeline.event.translators.transformer.Transformer;
+import com.redis.connect.utils.ConnectConstants;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,8 +49,10 @@ public class PrintCEPostProcessor implements Transformer<ChangeEvent<Map<String,
         if (changeEvent.getPayload() != null && changeEvent.getPayload().get(ConnectConstants.VALUE) != null) {
             Operation op = (Operation) changeEvent.getPayload().get(ConnectConstants.VALUE);
 
-            //String[] keys = op.getCols().getCol().stream().filter(Objects::nonNull).map(Col::getName).toArray(String[]::new);
-            //String[] values = op.getCols().getCol().stream().filter(Objects::nonNull).map(Col::getValue).toArray(String[]::new);
+            /*
+            String[] keys = op.getCols().getCol().stream().filter(Objects::nonNull).map(Col::getName).toArray(String[]::new);
+            String[] values = op.getCols().getCol().stream().filter(Objects::nonNull).map(Col::getValue).toArray(String[]::new)
+             */
 
             MapperConfig mapperConfig = MapperProvider.INSTANCE.getTableConfig(op.getSchema().concat(".").concat(op.getTable())).getMapper();
 
@@ -64,7 +66,7 @@ public class PrintCEPostProcessor implements Transformer<ChangeEvent<Map<String,
                 JSONObject jsonObject = new JSONObject();
 
                 StringBuffer cBuffer = new StringBuffer();
-                cBuffer.append("\"HMSET\"").
+                cBuffer.append("\"HSET\"").
                         append(" ").
                         append("\"").
                         append(op.getTable().concat(":").concat(cKey)).

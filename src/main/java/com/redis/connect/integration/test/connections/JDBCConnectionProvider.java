@@ -1,6 +1,6 @@
-package com.redislabs.connect.integration.test.connections;
+package com.redis.connect.integration.test.connections;
 
-import com.redislabs.connect.integration.test.config.IntegrationConfig;
+import com.redis.connect.integration.test.config.IntegrationConfig;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.extern.slf4j.Slf4j;

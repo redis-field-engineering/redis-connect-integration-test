@@ -5,8 +5,9 @@
 .classpath
 .project
 .settings
+.flattened-pom.xml
 build
-/target
+target
 dependency-reduced-pom.xml
 *.sublime-*
 /scratch
@@ -14,4 +15,7 @@ dependency-reduced-pom.xml
 README.html
 *.iml
 .idea
-logs/
+*.log
+*.gfs
+logs/**
+buildNumber.properties

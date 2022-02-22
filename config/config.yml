@@ -21,6 +21,7 @@ connections:
     delete: delete.sql
     sourceJsonFile: emp-source.json
     #loadQuery: "select * from dbo.emp"
+    #truncateBeforeLoad: true # default is true and the table won't be truncated before initial load. Applies to both crudloader and loadsql options.
     iteration: 20
   target:
     redisUrl: redis://127.0.0.1:14000

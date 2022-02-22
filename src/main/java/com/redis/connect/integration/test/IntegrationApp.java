@@ -1,9 +1,10 @@
-package com.redislabs.connect.integration.test;
+package com.redis.connect.integration.test;
 
-import com.redislabs.connect.integration.test.core.*;
-import com.redislabs.connect.integration.test.source.rdb.LoadRDB;
-import com.redislabs.connect.integration.test.target.redis.CompareSourceAndTarget;
-import com.redislabs.connect.integration.test.target.redis.QueryAndCompare;
+import com.redis.connect.integration.test.core.*;
+
+import com.redis.connect.integration.test.source.rdb.LoadRDB;
+import com.redis.connect.integration.test.target.redis.CompareSourceAndTarget;
+import com.redis.connect.integration.test.target.redis.QueryAndCompare;
 import picocli.CommandLine;
 
 /**

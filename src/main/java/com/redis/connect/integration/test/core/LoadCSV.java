@@ -1,8 +1,8 @@
-package com.redislabs.connect.integration.test.core;
+package com.redis.connect.integration.test.core;
 
 import com.opencsv.CSVReader;
-import com.redislabs.connect.integration.test.config.IntegrationConfig;
-import com.redislabs.connect.integration.test.connections.JDBCConnectionProvider;
+import com.redis.connect.integration.test.config.IntegrationConfig;
+import com.redis.connect.integration.test.connections.JDBCConnectionProvider;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;

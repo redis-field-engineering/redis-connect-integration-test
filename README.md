@@ -34,7 +34,7 @@ Commands:
   loadcsvdata        Load CSV data to source table.
   loadcsvandcompare  Load CSV data to source and print live comparisons.
 ```
----
+## Print Raw Events
 
 | :memo:        |
 |---------------|

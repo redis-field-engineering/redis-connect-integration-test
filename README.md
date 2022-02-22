@@ -38,11 +38,10 @@ Commands:
 
 | :memo:        |
 |---------------|
-Pre- / Post-Processor usage: Use this in JobConfig.yml for the `eventTranslator`:
+Pre- / Post-Processor usage: Use `eventTranslatorConfig` instead of `eventTranslator` in the JobConfig.yml
 
 ````yaml
 eventTranslatorConfig:
 translator: "PRINT_RAW_CE"
-preprocessor: PrintCEPostProcessor
-#postprocessor: PrintCEPostProcessor
+postprocessor: PrintCEPostProcessor
 ````

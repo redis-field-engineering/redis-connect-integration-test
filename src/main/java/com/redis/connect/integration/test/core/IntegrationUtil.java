@@ -186,7 +186,7 @@ public class IntegrationUtil {
             RedisModulesCommands<String, String> syncCommands = redisConnection.sync();
 
             for (String key : keys) {
-                value.add(syncCommands.hgetall(key))
+                value.add(syncCommands.hgetall(key));
             }
         }
 

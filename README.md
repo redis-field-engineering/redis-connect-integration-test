@@ -38,10 +38,11 @@ Commands:
 
 | :memo:        |
 |---------------|
-Pre- / Post-Processor usage: Use `eventTranslatorConfig` instead of `eventTranslator` in the JobConfig.yml
+Post-Processor usage: Use `eventTranslatorConfig` instead of `eventTranslator` in the JobConfig.yml under `pipelineConfig` to generate raw events from the source.
 
 ````yaml
-eventTranslatorConfig:
-translator: "PRINT_RAW_CE"
-postprocessor: PrintCEPostProcessor
+pipelineConfig:
+  eventTranslatorConfig:
+    translator: "${sourceValueTranslator}"
+    postprocessor: PRINT_RAW_CE
 ````

@@ -9,7 +9,6 @@ import com.redis.connect.pipeline.event.translators.mapper.MapperConfig;
 import com.redis.connect.pipeline.event.translators.mapper.MapperProvider;
 import com.redis.connect.pipeline.event.translators.transformer.Transformer;
 import com.redis.connect.utils.ConnectConstants;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +16,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.management.ManagementFactory;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -26,7 +26,8 @@ import java.util.stream.Collectors;
 
 public class PrintCEPostProcessor implements Transformer<ChangeEvent<Map<String, Object>>, Object> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger("redisconnect");
+    private static final Logger LOGGER = LoggerFactory.getLogger("redis-connect");
+    private static final String WHOAMI = "PrintCEPostProcessor";
 
     String userDirectory = System.getProperty("user.dir");
 
@@ -44,7 +45,7 @@ public class PrintCEPostProcessor implements Transformer<ChangeEvent<Map<String,
     @Override
     public void accept(ChangeEvent<Map<String, Object>> changeEvent, Object o) {
 
-        LOGGER.debug("PRINT_RAW_CE : {}", changeEvent);
+        LOGGER.info("Instance: {} {} PRINT_RAW_CE : {}", getInstanceId(), WHOAMI, changeEvent);
 
         if (changeEvent.getPayload() != null && changeEvent.getPayload().get(ConnectConstants.VALUE) != null) {
             Operation op = (Operation) changeEvent.getPayload().get(ConnectConstants.VALUE);
@@ -61,30 +62,28 @@ public class PrintCEPostProcessor implements Transformer<ChangeEvent<Map<String,
                 String cKey = mapperConfig.getColumns().stream().filter(ColumnField::isKey).map(c -> op.getCols().getCol(c.getTarget()).getValue()).collect(Collectors.joining(":"));
                 String dKey = mapperConfig.getColumns().stream().filter(ColumnField::isKey).map(c -> op.getCols().getCol(c.getTarget()).getBefore()).collect(Collectors.joining(":"));
 
-                LOGGER.debug("No. of columns on the source: {}", mapperConfig.getColumns().size());
+                LOGGER.info("Instance: {} {} No. of columns on the source: {}", getInstanceId(), WHOAMI, mapperConfig.getColumns().size());
 
-                JSONObject jsonObject = new JSONObject();
-
-                StringBuffer cBuffer = new StringBuffer();
-                cBuffer.append("\"HSET\"").
+                StringBuilder cBuilder = new StringBuilder();
+                cBuilder.append("\"HSET\"").
                         append(" ").
                         append("\"").
                         append(op.getTable().concat(":").concat(cKey)).
                         append("\" ");
 
-                StringBuffer dBuffer = new StringBuffer();
-                dBuffer.append("\"HDEL\"").
+                StringBuilder dBuilder = new StringBuilder();
+                dBuilder.append("\"HDEL\"").
                         append(" ").
                         append("\"").
                         append(op.getTable().concat(":").concat(dKey)).
                         append("\" ");
+
                 for (ColumnField columnField : mapperConfig.getColumns()) {
                     Col col = op.getCols().getCol(columnField.getTarget());
                     if ((op.getType().equals(OperationType.I)) || (op.getType().equals(OperationType.C)) ||
                             (op.getType().equals(OperationType.U))) {
-                        jsonObject.put("op", op.getType());
-                        jsonObject.put("key", op.getTable().concat(":").concat(cKey));
-                        cBuffer.append("\"").
+
+                        cBuilder.append("\"").
                                 append(col.getName()).
                                 append("\"").
                                 append(" ").
@@ -92,37 +91,28 @@ public class PrintCEPostProcessor implements Transformer<ChangeEvent<Map<String,
                                 append(col.getValue()).
                                 append("\"").
                                 append(" ");
-                        jsonObject.put("fields", cBuffer);
                     }
                     if (op.getType().equals(OperationType.D)) {
-                        jsonObject.put("op", op.getType());
-                        jsonObject.put("key", op.getTable().concat(":").concat(dKey));
-                        dBuffer.append("\"").
+                        dBuilder.append("\"").
                                 append(col.getName()).
                                 append("\"").
                                 append(" ");
-                        jsonObject.put("fields", dBuffer);
                     }
                 }
 
-                LOGGER.info("Raw Event - ReadTime={} TxTime={} {}", op.getReadTime(), op.getTxTime(), jsonObject);
+                LOGGER.info("Instance: {} {} Raw Event - ReadTime={} TxTime={} {}", getInstanceId(), WHOAMI, op.getReadTime(), op.getTxTime(), changeEvent);
 
                 try {
                     if ((op.getType().equals(OperationType.I)) || (op.getType().equals(OperationType.C)) ||
                             (op.getType().equals(OperationType.U))) {
                         writeToFile(userDirectory.concat(File.separator)
                                         .concat("redis-connect-raw-events.out"),
-                                cBuffer.toString());
+                                cBuilder.toString());
                     }
                     if (op.getType().equals(OperationType.D)) {
                         writeToFile(userDirectory.concat(File.separator)
                                         .concat("redis-connect-raw-events.out"),
-                                dBuffer.toString());
-                    }
-                    if (!jsonObject.isEmpty()) {
-                        writeToFile(userDirectory.concat(File.separator)
-                                        .concat("redis-connect-raw-events.json"),
-                                jsonObject.toString());
+                                dBuilder.toString());
                     }
                 } catch (IOException e) {
                     LOGGER.error(e.getMessage());
@@ -145,6 +135,10 @@ public class PrintCEPostProcessor implements Transformer<ChangeEvent<Map<String,
         pw.println(content);
         pw.close();
         fw.close();
+    }
+
+    private String getInstanceId() {
+        return ManagementFactory.getRuntimeMXBean().getName();
     }
 
 }

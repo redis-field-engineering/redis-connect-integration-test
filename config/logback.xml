@@ -1,33 +1,43 @@
-<configuration debug="true" scan="true" scanPeriod="15 seconds">
-    <property name="LOG_PATH" value="logs/redis-connect-qa.log"/>
-    <appender name="FILE-ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_PATH}</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>logs/archived/app.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
-            <!-- each archived file, size max 10MB -->
-            <maxFileSize>10MB</maxFileSize>
-            <!-- total size of all archive files, if total size > 20GB, it will delete old archived file -->
-            <totalSizeCap>20GB</totalSizeCap>
-            <!-- 60 days to keep -->
-            <maxHistory>60</maxHistory>
-        </rollingPolicy>
-        <encoder>
-            <pattern>%d %p %c{1.} [%t] %m%n</pattern>
-        </encoder>
-    </appender>
+<configuration debug="true" scan="true" scanPeriod="30 seconds">
+<property name="LOG_PATH" value="logs/redis-connect-integration-test.log"/>
+<appender name="FILE-ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${LOG_PATH}</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+        <fileNamePattern>logs/archived/app.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+        <!-- each archived file, size max 10MB -->
+        <maxFileSize>10MB</maxFileSize>
+        <!-- total size of all archive files, if total size > 20GB, it will delete old archived file -->
+        <totalSizeCap>20GB</totalSizeCap>
+        <!-- 60 days to keep -->
+        <maxHistory>60</maxHistory>
+    </rollingPolicy>
+    <encoder>
+        <pattern>%d %p %c{1.} [%t] %m%n</pattern>
+    </encoder>
+</appender>
 
-    <logger name="com.redis" level="INFO" additivity="false">
-        <appender-ref ref="FILE-ROLLING"/>
-    </logger>
-    <logger name="io.netty" level="INFO" additivity="false">
-        <appender-ref ref="FILE-ROLLING"/>
-    </logger>
-    <logger name="io.lettuce" level="INFO" additivity="false">
-        <appender-ref ref="FILE-ROLLING"/>
-    </logger>
+<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <withJansi>true</withJansi>
+    <encoder>
+        <pattern>%d{HH:mm:ss.SSS} [%thread] %highlight(%-5level) %cyan(%logger{36}) - %msg%n</pattern>
+    </encoder>
+</appender>
 
-    <root level="error">
-        <appender-ref ref="FILE-ROLLING"/>
-    </root>
+<logger name="com.redis" level="INFO" additivity="false">
+    <appender-ref ref="FILE-ROLLING"/>
+    <appender-ref ref="CONSOLE" />
+</logger>
+<logger name="io.netty" level="INFO" additivity="false">
+    <appender-ref ref="FILE-ROLLING"/>
+    <appender-ref ref="CONSOLE" />
+</logger>
+<logger name="io.lettuce" level="INFO" additivity="false">
+    <appender-ref ref="FILE-ROLLING"/>
+    <appender-ref ref="CONSOLE" />
+</logger>
+
+<root level="error">
+    <appender-ref ref="FILE-ROLLING"/>
+</root>
 
 </configuration>

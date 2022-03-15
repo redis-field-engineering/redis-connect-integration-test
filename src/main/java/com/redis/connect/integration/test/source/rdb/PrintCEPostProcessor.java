@@ -28,9 +28,16 @@ public class PrintCEPostProcessor implements Transformer<ChangeEvent<Map<String,
 
     private static final Logger LOGGER = LoggerFactory.getLogger("redis-connect");
     private static final String WHOAMI = "PrintCEPostProcessor";
+    private static final String OUT_FILE_PREFIX = "redis.connect.";
+    private static final String OUT_FILE_SUFFIX = ".raw-events.out";
 
-    String userDirectory = System.getProperty("user.dir");
+    private final String instanceId;
 
+    String userDirectory = System.getProperty("redis.connect.outFile.path", System.getProperty("user.dir"));
+
+    public PrintCEPostProcessor() {
+        this.instanceId = ManagementFactory.getRuntimeMXBean().getName();
+    }
     @Override
     public String getId() {
         return "PRINT_RAW_CE";
@@ -45,10 +52,12 @@ public class PrintCEPostProcessor implements Transformer<ChangeEvent<Map<String,
     @Override
     public void accept(ChangeEvent<Map<String, Object>> changeEvent, Object o) {
 
-        LOGGER.info("Instance: {} {} PRINT_RAW_CE : {}", getInstanceId(), WHOAMI, changeEvent);
+        LOGGER.info("Instance: {} {} PRINT_RAW_CE : {}", instanceId, WHOAMI, changeEvent);
 
         if (changeEvent.getPayload() != null && changeEvent.getPayload().get(ConnectConstants.VALUE) != null) {
             Operation op = (Operation) changeEvent.getPayload().get(ConnectConstants.VALUE);
+
+            String tableName = op.getSchema() + "." + op.getTable();
 
             /*
             String[] keys = op.getCols().getCol().stream().filter(Objects::nonNull).map(Col::getName).toArray(String[]::new);
@@ -62,7 +71,7 @@ public class PrintCEPostProcessor implements Transformer<ChangeEvent<Map<String,
                 String cKey = mapperConfig.getColumns().stream().filter(ColumnField::isKey).map(c -> op.getCols().getCol(c.getTarget()).getValue()).collect(Collectors.joining(":"));
                 String dKey = mapperConfig.getColumns().stream().filter(ColumnField::isKey).map(c -> op.getCols().getCol(c.getTarget()).getBefore()).collect(Collectors.joining(":"));
 
-                LOGGER.info("Instance: {} {} No. of columns on the source: {}", getInstanceId(), WHOAMI, mapperConfig.getColumns().size());
+                LOGGER.info("Instance: {} {} No. of columns on the source: {}", instanceId, WHOAMI, mapperConfig.getColumns().size());
 
                 StringBuilder cBuilder = new StringBuilder();
                 cBuilder.append("\"HSET\"").
@@ -100,18 +109,18 @@ public class PrintCEPostProcessor implements Transformer<ChangeEvent<Map<String,
                     }
                 }
 
-                LOGGER.info("Instance: {} {} Raw Event - ReadTime={} TxTime={} {}", getInstanceId(), WHOAMI, op.getReadTime(), op.getTxTime(), changeEvent);
+                LOGGER.info("Instance: {} {} Raw Event - ReadTime={} TxTime={} {}", instanceId, WHOAMI, op.getReadTime(), op.getTxTime(), changeEvent);
 
                 try {
                     if ((op.getType().equals(OperationType.I)) || (op.getType().equals(OperationType.C)) ||
                             (op.getType().equals(OperationType.U))) {
                         writeToFile(userDirectory.concat(File.separator)
-                                        .concat("redis-connect-raw-events.out"),
+                                        .concat(OUT_FILE_PREFIX + tableName + OUT_FILE_SUFFIX),
                                 cBuilder.toString());
                     }
                     if (op.getType().equals(OperationType.D)) {
                         writeToFile(userDirectory.concat(File.separator)
-                                        .concat("redis-connect-raw-events.out"),
+                                        .concat(OUT_FILE_PREFIX + tableName + OUT_FILE_SUFFIX),
                                 dBuilder.toString());
                     }
                 } catch (IOException e) {
@@ -135,10 +144,6 @@ public class PrintCEPostProcessor implements Transformer<ChangeEvent<Map<String,
         pw.println(content);
         pw.close();
         fw.close();
-    }
-
-    private String getInstanceId() {
-        return ManagementFactory.getRuntimeMXBean().getName();
     }
 
 }

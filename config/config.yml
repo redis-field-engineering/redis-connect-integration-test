@@ -26,5 +26,5 @@ connections:
   target:
     redisUrl: redis://127.0.0.1:14000
     keys: redis.keys
-    sourceFile: redis-connect-raw-events.out
-    targetFile: redis-14000-07-12-2021.log
+    sourceFile: ../../../Downloads/redis.connect.RedisConnect.emp.raw-events.out
+    targetFile: ../../../temp/redis-14000_03152022.log

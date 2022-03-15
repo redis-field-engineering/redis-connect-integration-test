@@ -8,7 +8,7 @@
     <artifactId>redis-connect-integration-test</artifactId>
     <name>Redis Connect Integration Test Framework</name>
     <description>Integration tests for Redis Connect</description>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <url>https://github.com/redis-field-engineering/redis-connect-integration-test</url>
     <inceptionYear>2022</inceptionYear>
 

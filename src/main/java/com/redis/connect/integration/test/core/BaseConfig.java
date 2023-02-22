@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.google.gson.Gson;
 import lombok.Getter;
 import lombok.Setter;
-import org.codehaus.jackson.map.ObjectMapper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -65,15 +64,4 @@ public class BaseConfig {
         return gson.toJson(object);
     }
 
-    //String to Object
-    public Object strToObject(String str){
-        Gson gson=new Gson();
-        return gson.fromJson(str,Object.class);
-    }
-
-    //String to JSON
-    public String strToJson(Object object) throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.writeValueAsString(object);
-    }
 }
